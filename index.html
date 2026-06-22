@@ -334,9 +334,9 @@ select.input-field{appearance:none}
       <button class="btn btn-ghost" style="padding:8px 16px;font-size:13px" onclick="goTab('skin')">✨ Mi piel</button>
     </div>
     <div class="card">
-      <div class="card-label" id="home-time-label">🌅 BUENOS DÍAS</div>
+      <div class="card-label" id="home-time-label">🌙 HOLA</div>
       <div class="card-title" id="home-greeting">Hola 🌸</div>
-      <div class="card-body" id="home-greeting-sub">Tocate las mejillas, mirá la zona T.</div>
+      <div class="card-body" id="home-greeting-sub">Tu momento de cuidarte 🌸</div>
     </div>
     <div class="card" id="checkin-card">
       <div class="card-label">🌿 CHECK-IN DIARIO</div>
@@ -491,26 +491,26 @@ select.input-field{appearance:none}
       <div id="ciclo-historial"></div>
     </div>
     <div class="card">
-      <div class="card-label">👤 PERFIL DE SALUD</div>
-      <div style="font-size:12px;color:var(--cream-dim);margin-bottom:12px;line-height:1.5">Completar estos datos mejora mucho los consejos que Luna te da 💜</div>
-      <div style="display:flex;gap:10px;margin-bottom:10px">
-        <div style="flex:1"><div class="input-label">Edad (opcional)</div><input type="number" class="input-field" id="horm-age" placeholder="años"></div>
-      </div>
-      <div class="input-label">¿Cómo te sentís durante el ciclo?</div>
-      <div class="sym-intro">No todo son molestias 💜 Marcá también lo bueno: ayuda a Luna a ver tus patrones completos.</div>
-      <div class="sym-group-label good">✨ Cómo me siento bien</div>
+      <div class="card-label">💜 ¿CÓMO TE SENTÍS HOY?</div>
+      <div class="sym-intro">Marcá lo que sentís hoy. Luna te sugiere cómo cuidarte mejor según eso 🌸</div>
+      <div class="sym-group-label good">✨ Lo bueno del ciclo</div>
       <div class="symptoms-grid" id="symptoms-grid-good"></div>
       <div class="sym-group-label bad">💜 Molestias</div>
       <div class="symptoms-grid" id="symptoms-grid-bad"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="saveHormProfile()">Guardar perfil ✨</button>
+      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="saveHormProfile()">Ver mis sugerencias ✨</button>
+    </div>
+    <div id="ciclo-bienestar" style="display:none">
+      <div class="section-header" style="padding-top:4px"><div class="section-header-title">Para cuidarte hoy 🌸</div></div>
+      <div class="card"><div class="tips-list" id="ciclo-bienestar-list"></div></div>
     </div>
     <div id="ciclo-consejos" style="display:none">
-      <div class="section-header" style="padding-top:4px"><div class="section-header-title">Consejos para hoy</div></div>
+      <div class="section-header" style="padding-top:4px"><div class="section-header-title">Consejos de piel para hoy</div></div>
       <div class="card"><div class="tips-list" id="ciclo-tips-list"></div></div>
     </div>
-    <div id="ciclo-sintomas-tabla" style="display:none">
-      <div class="section-header" style="padding-top:4px"><div class="section-header-title">Síntomas probables</div></div>
-      <div class="card" style="padding:12px 8px;overflow-x:auto"><table class="symptom-table" id="ciclo-tabla"></table></div>
+    <div class="card" style="margin-top:4px">
+      <div class="card-label">👤 EDAD (OPCIONAL)</div>
+      <div style="font-size:12px;color:var(--cream-dim);margin-bottom:10px;line-height:1.5">Ayuda a Luna a ajustar tus consejos de piel 💜</div>
+      <input type="number" class="input-field" id="horm-age" placeholder="años">
     </div>
   </div>
 </div>
@@ -2249,9 +2249,11 @@ function renderCiclo() {
       document.getElementById('ciclo-phase-day').textContent = `Día ${getCycleDay(ciclo.start)} del ciclo`;
       document.getElementById('ciclo-phase-desc').textContent = phase.desc;
       renderCicloTips(phase);
-      renderSintomasTabla(phase);
     }
   }
+  // Si ya marcó síntomas antes, mostrar sus sugerencias de bienestar
+  var savedSyms = (hormProf.symptoms || []);
+  if (savedSyms.length) renderBienestar(savedSyms);
 }
 
 function getCycleDay(startStr) {
@@ -2395,7 +2397,63 @@ function saveHormProfile() {
     LS.set('skinResult', result);
   }
   checkNudge();
-  showToast('Perfil guardado ✨ Luna ajustó tu diagnóstico');
+  renderBienestar(syms);
+  showToast('Listo ✨ Mirá tus sugerencias para hoy');
+  // Llevar la vista a las sugerencias generadas
+  setTimeout(function() {
+    var el = document.getElementById('ciclo-bienestar');
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
+}
+
+// Sugerencias de bienestar concretas segun lo que la usuaria marca hoy
+var BIENESTAR_SUGERENCIAS = {
+  'Cólicos':       [{e:'🔥',t:'Aplicá una bolsa de agua caliente en la zona baja del abdomen, alivia bastante.'},{e:'🍵',t:'Probá un té de jengibre o manzanilla, ayudan con el dolor.'}],
+  'Cansancio':     [{e:'😴',t:'Date permiso para descansar. Una siesta corta de 20 min recarga sin dejarte atontada.'},{e:'💧',t:'Tomá agua: a veces el cansancio es deshidratación disfrazada.'}],
+  'Retención':     [{e:'💧',t:'Tomá mucha agua durante el día, ayuda a tu cuerpo a soltar líquidos.'},{e:'🚶‍♀️',t:'Una caminata suave de 15 min activa la circulación y baja la hinchazón.'}],
+  'Granitos':      [{e:'🌸',t:'No los toques ni aprietes. Si querés, parche hidrocoloide y a otra cosa.'},{e:'🧴',t:'Mantené tu rutina simple y calmante estos días, sin productos nuevos.'}],
+  'Irritabilidad': [{e:'🧘‍♀️',t:'Probá 5 min de respiración o yoga suave, baja la tensión enseguida.'},{e:'🍫',t:'Date un gusto chico sin culpa, un cuadradito de chocolate amargo va perfecto.'}],
+  'Náuseas':       [{e:'🍵',t:'Un té de jengibre tibio, de a sorbos, suele asentar el estómago.'},{e:'🍪',t:'Comé algo liviano y seco (galletitas de arroz) antes de que empeore.'}],
+  'Sensibilidad':  [{e:'💜',t:'Sé amable con vos hoy. Bajá una marcha, no te exijas de más.'},{e:'🛁',t:'Un baño tibio o una ducha relajada te puede vender muy bien.'}],
+  'Calores':       [{e:'💧',t:'Tomá agua fresca y vestite con capas livianas que puedas sacarte.'},{e:'🌬️',t:'Buscá un lugar ventilado, evita el calor extra estos días.'}],
+  'Dolores cabeza':[{e:'💧',t:'Tomá agua: muchos dolores de cabeza arrancan por falta de hidratación.'},{e:'🌙',t:'Bajá la luz de la pantalla y descansá los ojos unos minutos.'}],
+  'Hinchazón':     [{e:'🚶‍♀️',t:'Una caminata corta de 15 min ayuda a desinflamar.'},{e:'🧂',t:'Bajá un poco la sal hoy, ayuda con la retención e hinchazón.'}],
+  'Insomnio':      [{e:'🍵',t:'Un té de tilo o manzanilla un rato antes de dormir relaja.'},{e:'📵',t:'Dejá el teléfono 30 min antes de acostarte, te va a costar menos dormir.'}],
+  'Antojos':       [{e:'🍫',t:'Si tenés antojo, dáselo en porción chica, sin culpa. Es normal estos días.'},{e:'🥜',t:'Tené a mano un snack rico y nutritivo (fruta, frutos secos) para acompañar.'}],
+  'Energía':       [{e:'🚶‍♀️',t:'Aprovechá la energía: una caminata de 15 min o algo de movimiento te va a sentar genial.'},{e:'🎯',t:'Buen día para encarar eso que venías postergando.'}],
+  'Buen humor':    [{e:'☀️',t:'Disfrutá el día. Aprovechá para hacer algo que te guste.'},{e:'🥳',t:'Buen momento para ver gente o planear algo lindo.'}],
+  'Piel luminosa': [{e:'📸',t:'Tu piel está en su mejor momento, aprovechalo.'},{e:'☀️',t:'No te olvides del protector solar para mantenerla así.'}],
+  'Libido alta':   [{e:'💜',t:'Es una fase natural del ciclo, disfrutá tu cuerpo.'}],
+  'Motivación':    [{e:'💪',t:'Canalizá esa motivación: movimiento, un proyecto, lo que tengas ganas.'},{e:'🚶‍♀️',t:'Buen día para una caminata o algo de ejercicio suave.'}],
+  'Creatividad':   [{e:'🎨',t:'Aprovechá para crear algo: escribir, dibujar, lo que te inspire.'}],
+  'Sociable':      [{e:'🥳',t:'Buen día para conectar con gente que querés.'}],
+  'Calma':         [{e:'🧘‍♀️',t:'Aprovechá la calma con unos minutos de yoga o respiración.'},{e:'🍵',t:'Un té tranquilo y un rato para vos, perfecto.'}],
+  'Concentración': [{e:'🎯',t:'Tu cabeza está clara: buen momento para tareas que requieren foco.'}]
+};
+
+function renderBienestar(syms) {
+  var cont = document.getElementById('ciclo-bienestar');
+  var list = document.getElementById('ciclo-bienestar-list');
+  if (!cont || !list) return;
+  if (!syms || syms.length === 0) {
+    cont.style.display = '';
+    list.innerHTML = '<div class="tip-item"><div class="tip-item-icon">🌸</div><div class="tip-item-text">Tomá mucha agua hoy y date un momento para vos. Cuando marques cómo te sentís, Luna te sugiere cosas más específicas 💜</div></div>';
+    return;
+  }
+  // Reunir sugerencias evitando repetir el mismo texto
+  var vistas = {};
+  var items = [];
+  syms.forEach(function(s) {
+    (BIENESTAR_SUGERENCIAS[s] || []).forEach(function(sug) {
+      if (!vistas[sug.t]) { vistas[sug.t] = true; items.push(sug); }
+    });
+  });
+  // Tip universal de cierre
+  items.push({ e: '💧', t: 'Y no te olvides: tomar agua durante el día siempre ayuda 🌸' });
+  cont.style.display = '';
+  list.innerHTML = items.map(function(it) {
+    return '<div class="tip-item"><div class="tip-item-icon">' + it.e + '</div><div class="tip-item-text">' + it.t + '</div></div>';
+  }).join('');
 }
 
 function renderSymptoms() {
@@ -2423,23 +2481,6 @@ function renderCicloTips(phase) {
   if (!tipsEl) return;
   tipsCont.style.display='';
   tipsEl.innerHTML = (tips[idx]||[]).map(t=>`<div class="tip-item"><div class="tip-item-icon">🌸</div><div class="tip-item-text">${t}</div></div>`).join('');
-}
-
-function renderSintomasTabla(phase) {
-  const phaseSymptoms = [
-    {síntomas:['Piel seca','Cansancio','Cólicos'],prob:['Alta','Alta','Alta']},
-    {síntomas:['Piel luminosa','Energía alta','Humor estable'],prob:['Alta','Alta','Media']},
-    {síntomas:['Piel en pico','Leve retención','Alta energía'],prob:['Alta','Media','Alta']},
-    {síntomas:['Granitos','Retención','Irritabilidad'],prob:['Alta','Alta','Media']}
-  ];
-  const tabla = document.getElementById('ciclo-tabla');
-  const cont = document.getElementById('ciclo-sintomas-tabla');
-  if (!tabla) return;
-  const idx = PHASES.indexOf(phase);
-  const data = phaseSymptoms[idx] || phaseSymptoms[0];
-  cont.style.display='';
-  tabla.innerHTML = `<tr><th>Síntoma</th><th>Probabilidad</th></tr>` +
-    data.síntomas.map((s,i)=>`<tr><td>${s}</td><td class="prob-${data.prob[i]==='Alta'?'high':data.prob[i]==='Media'?'med':'low'}">${data.prob[i]}</td></tr>`).join('');
 }
 
 // ─── GLOSARIO ────────────────────────────────────
@@ -2999,9 +3040,43 @@ function updateHomeGreeting() {
   var profile = LS.get('profile') || {};
   var name = profile.name || '';
   var hour = new Date().getHours();
-  var saludo = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+
+  // Momento del día → saludo, etiqueta y emoji coherentes entre sí
+  var saludo, label, emoji, subs;
+  if (hour < 12) {
+    saludo = 'Buenos días';  label = 'BUENOS DÍAS';  emoji = '🌅';
+    subs = [
+      'Arrancá el día cuidando tu piel 🌸',
+      'Un buen día empieza con tu rutina de mañana ☀️',
+      'No te olvides del protector solar hoy ☀️'
+    ];
+  } else if (hour < 19) {
+    saludo = 'Buenas tardes'; label = 'BUENAS TARDES'; emoji = '☀️';
+    subs = [
+      '¿Cómo viene tu piel hoy? 🌸',
+      'Un momento para vos en medio del día 💜',
+      'Acordate de tomar agua e hidratarte 💧'
+    ];
+  } else {
+    saludo = 'Buenas noches'; label = 'BUENAS NOCHES'; emoji = '🌙';
+    subs = [
+      'Hora de tu rutina de noche 🌙',
+      'Tu piel se repara mientras dormís ✨',
+      'Cerrá el día con tu ritual de cuidado 💜'
+    ];
+  }
+
   var el = document.getElementById('home-greeting');
   if (el) el.textContent = saludo + (name ? ', ' + name : '') + ' 🌙';
+
+  var labelEl = document.getElementById('home-time-label');
+  if (labelEl) labelEl.textContent = emoji + ' ' + label;
+
+  var subEl = document.getElementById('home-greeting-sub');
+  if (subEl) {
+    var idx = new Date().getDate() % subs.length;
+    subEl.textContent = subs[idx];
+  }
 }
 
 function loadDailyTip() {
@@ -3316,15 +3391,9 @@ function renderRachaHome() {
   var esIrregular = LS.get('cicloIrregular') || false;
   if (pEl) pEl.textContent = esIrregular ? '🌀' : (fase ? fase.emoji : '🌑');
 
-  // Saludo según fase lunar
-  var subEl = document.getElementById('home-greeting-sub');
-  if (subEl) {
-    if (racha === 0) {
-      subEl.textContent = 'Lavate la cara, esperá unos minutos y fijate cómo está tu piel hoy.';
-    } else {
-      subEl.textContent = fase ? fase.msg.substring(0, 60) + (fase.msg.length > 60 ? '...' : '') : '';
-    }
-  }
+  // El subtítulo del saludo lo maneja updateHomeGreeting() con su propio
+  // mensaje según el momento del día. Ya no se pisa aquí para evitar el
+  // texto cortado y la frase repetida con la card de fase lunar.
 
   // Renderizar la card de fases lunares
   renderSistemRachas();
