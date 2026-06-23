@@ -469,6 +469,16 @@ select.input-field{appearance:none}
       <div class="form-group"><div class="input-label">Inicio del período</div><input type="date" class="input-field" id="ciclo-start"></div>
       <div class="form-group"><div class="input-label">Fin del período (si ya terminó)</div><input type="date" class="input-field" id="ciclo-end"></div>
       <button class="btn btn-primary btn-full" style="margin-top:4px" onclick="saveCiclo()">Guardar ciclo 🌸</button>
+      <button class="btn btn-full" id="btn-menstruando" style="margin-top:8px;background:linear-gradient(135deg,rgba(212,80,80,.18),rgba(212,120,154,.18));border:1px solid rgba(212,120,154,.4);color:var(--cream)" onclick="iniciarMenstruacion()">🩸 Estoy menstruando hoy</button>
+    </div>
+    <div class="card" id="ciclo-sintomas-card" style="display:none">
+      <div class="card-label">🩸 ¿CÓMO TE SENTÍS HOY?</div>
+      <div class="sym-intro">Marcá lo que sentís. Se guarda en tu historial y Luna te sugiere cómo cuidarte 🌸</div>
+      <div class="sym-group-label good">✨ Lo bueno del ciclo</div>
+      <div class="symptoms-grid" id="symptoms-grid-good"></div>
+      <div class="sym-group-label bad">💜 Molestias</div>
+      <div class="symptoms-grid" id="symptoms-grid-bad"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="saveHormProfile()">Guardar síntomas ✨</button>
     </div>
     <div id="ciclo-irregular-card" style="display:none;margin:0 16px 12px">
       <div style="background:linear-gradient(135deg,rgba(212,120,154,.1),rgba(155,127,212,.08));border:1px solid rgba(212,120,154,.25);border-radius:20px;padding:18px">
@@ -482,23 +492,6 @@ select.input-field{appearance:none}
         </div>
       </div>
     </div>
-    <div style="margin-top:20px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-size:16px">📋</span>
-        <span style="font-size:12px;color:var(--purple-light);font-weight:600;letter-spacing:1px">MI HISTORIAL DE CICLOS</span>
-      </div>
-      <div style="font-size:12px;color:var(--cream-dim);margin-bottom:12px;line-height:1.5">Cada período que registrás se guarda acá. Útil para mostrarle a tu ginecóloga 🌸</div>
-      <div id="ciclo-historial"></div>
-    </div>
-    <div class="card">
-      <div class="card-label">💜 ¿CÓMO TE SENTÍS HOY?</div>
-      <div class="sym-intro">Marcá lo que sentís hoy. Luna te sugiere cómo cuidarte mejor según eso 🌸</div>
-      <div class="sym-group-label good">✨ Lo bueno del ciclo</div>
-      <div class="symptoms-grid" id="symptoms-grid-good"></div>
-      <div class="sym-group-label bad">💜 Molestias</div>
-      <div class="symptoms-grid" id="symptoms-grid-bad"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="saveHormProfile()">Ver mis sugerencias ✨</button>
-    </div>
     <div id="ciclo-bienestar" style="display:none">
       <div class="section-header" style="padding-top:4px"><div class="section-header-title">Para cuidarte hoy 🌸</div></div>
       <div class="card"><div class="tips-list" id="ciclo-bienestar-list"></div></div>
@@ -507,11 +500,15 @@ select.input-field{appearance:none}
       <div class="section-header" style="padding-top:4px"><div class="section-header-title">Consejos de piel para hoy</div></div>
       <div class="card"><div class="tips-list" id="ciclo-tips-list"></div></div>
     </div>
-    <div class="card" style="margin-top:4px">
-      <div class="card-label">👤 EDAD (OPCIONAL)</div>
-      <div style="font-size:12px;color:var(--cream-dim);margin-bottom:10px;line-height:1.5">Ayuda a Luna a ajustar tus consejos de piel 💜</div>
-      <input type="number" class="input-field" id="horm-age" placeholder="años">
+    <div style="margin-top:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:16px">📋</span>
+        <span style="font-size:12px;color:var(--purple-light);font-weight:600;letter-spacing:1px">MI HISTORIAL DE CICLOS</span>
+      </div>
+      <div style="font-size:12px;color:var(--cream-dim);margin-bottom:12px;line-height:1.5">Cada período que registrás se guarda acá. Útil para mostrarle a tu ginecóloga 🌸</div>
+      <div id="ciclo-historial"></div>
     </div>
+    <input type="hidden" id="horm-age">
   </div>
 </div>
 <div class="screen" id="sc-glosario">
@@ -1052,7 +1049,10 @@ const SYMPTOMS_GOOD = [
 const SYMPTOMS_BAD = [
   {emoji:'😣',text:'Cólicos'},{emoji:'😴',text:'Cansancio'},{emoji:'💧',text:'Retención'},{emoji:'🔴',text:'Granitos'},
   {emoji:'😢',text:'Irritabilidad'},{emoji:'🤢',text:'Náuseas'},{emoji:'💜',text:'Sensibilidad'},{emoji:'🌡️',text:'Calores'},
-  {emoji:'😵',text:'Dolores cabeza'},{emoji:'🥱',text:'Hinchazón'},{emoji:'💤',text:'Insomnio'},{emoji:'🍫',text:'Antojos'}
+  {emoji:'😵',text:'Dolores cabeza'},{emoji:'🥱',text:'Hinchazón'},{emoji:'💤',text:'Insomnio'},{emoji:'🍫',text:'Antojos'},
+  {emoji:'🩸',text:'Sangrado abundante'},{emoji:'🔻',text:'Dolor lumbar'},{emoji:'🦵',text:'Dolor de piernas'},{emoji:'🤕',text:'Migraña'},
+  {emoji:'😞',text:'Tristeza'},{emoji:'😰',text:'Ansiedad'},{emoji:'🍽️',text:'Más apetito'},{emoji:'🚽',text:'Diarrea'},
+  {emoji:'🪨',text:'Constipación'},{emoji:'🎈',text:'Pechos sensibles'},{emoji:'😖',text:'Calambres'},{emoji:'🥴',text:'Mareos'}
 ];
 const SYMPTOMS_LIST = [...SYMPTOMS_GOOD, ...SYMPTOMS_BAD];
 
@@ -2235,10 +2235,15 @@ function renderCiclo() {
     const el = document.getElementById('ciclo-end');
     if (el) el.value = ciclo.end;
   }
-  if (hormProf.age) document.getElementById('horm-age').value = hormProf.age;
-  // peso y altura eliminados por sensibilidad
+  if (hormProf.age && document.getElementById('horm-age')) document.getElementById('horm-age').value = hormProf.age;
 
   renderSymptoms();
+  // Si el período se registró HOY, mantener visible la sección de síntomas
+  var hoy = new Date();
+  var isoHoy = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
+  var symCard = document.getElementById('ciclo-sintomas-card');
+  if (symCard && ciclo.start === isoHoy) symCard.style.display = '';
+
   if (ciclo.start) {
     const phase = getCurrentPhase(ciclo.start);
     const hero = document.getElementById('ciclo-phase-hero');
@@ -2249,11 +2254,11 @@ function renderCiclo() {
       document.getElementById('ciclo-phase-day').textContent = `Día ${getCycleDay(ciclo.start)} del ciclo`;
       document.getElementById('ciclo-phase-desc').textContent = phase.desc;
       renderCicloTips(phase);
+      renderBienestar(phase);
     }
+  } else {
+    renderBienestar(null);
   }
-  // Si ya marcó síntomas antes, mostrar sus sugerencias de bienestar
-  var savedSyms = (hormProf.symptoms || []);
-  if (savedSyms.length) renderBienestar(savedSyms);
 }
 
 function getCycleDay(startStr) {
@@ -2360,10 +2365,14 @@ function renderCicloHistorial() {
       var dur = Math.round((fin - ini)/86400000) + 1;
       finLabel += ' · ' + dur + ' días';
     }
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:6px">';
-    html += '<div><div style="font-size:13px;color:var(--cream)">' + meses[ini.getMonth()].charAt(0).toUpperCase() + meses[ini.getMonth()].slice(1) + '</div>';
-    html += '<div style="font-size:11px;color:var(--cream-dim)">' + label + finLabel + '</div></div>';
-    html += '<button onclick="deleteCicloHist(\'' + c.start + '\')" style="background:none;border:1px solid rgba(212,80,80,.3);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;color:rgba(212,120,154,1)">🗑</button>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:6px">';
+    html += '<div style="flex:1"><div style="font-size:13px;color:var(--cream)">' + meses[ini.getMonth()].charAt(0).toUpperCase() + meses[ini.getMonth()].slice(1) + '</div>';
+    html += '<div style="font-size:11px;color:var(--cream-dim)">' + label + finLabel + '</div>';
+    if (c.sintomas && c.sintomas.length) {
+      html += '<div style="font-size:11px;color:var(--purple-light);margin-top:4px;line-height:1.4">💜 ' + c.sintomas.join(', ') + '</div>';
+    }
+    html += '</div>';
+    html += '<button onclick="deleteCicloHist(\'' + c.start + '\')" style="background:none;border:1px solid rgba(212,80,80,.3);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;color:rgba(212,120,154,1);flex-shrink:0;margin-left:8px">🗑</button>';
     html += '</div>';
   }
   cont.innerHTML = html;
@@ -2377,79 +2386,95 @@ function deleteCicloHist(start) {
   showToast('Ciclo eliminado del historial');
 }
 
+function iniciarMenstruacion() {
+  // Registra el período de hoy y abre los síntomas en una sola acción
+  var hoy = new Date();
+  var iso = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
+  var startEl = document.getElementById('ciclo-start');
+  if (startEl && !startEl.value) startEl.value = iso;
+  var s = startEl ? startEl.value : iso;
+  LS.set('ciclo', { start: s, end: '' });
+  // Guardar en historial sin duplicar
+  var hist = LS.get('cicloHistorial') || [];
+  var existe = hist.some(function(c) { return c.start === s; });
+  if (!existe) {
+    hist.push({ start: s, end: '', registrado: new Date().toISOString(), sintomas: [] });
+    hist.sort(function(a,b) { return new Date(a.start) - new Date(b.start); });
+    LS.set('cicloHistorial', hist);
+  }
+  // Mostrar la sección de síntomas y llevar la vista ahí
+  var card = document.getElementById('ciclo-sintomas-card');
+  if (card) {
+    card.style.display = '';
+    renderSymptoms();
+    setTimeout(function() {
+      if (card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+  }
+  renderCiclo();
+  initNotificaciones();
+  showToast('Período registrado 🩸 Marcá cómo te sentís');
+}
+
 function saveHormProfile() {
-  const age = document.getElementById('horm-age').value;
-  const kg = null;
-  const cm = null;
+  const age = (document.getElementById('horm-age') || {}).value || '';
   const syms = [...document.querySelectorAll('.symptom-btn.active')].map(b => b.dataset.sym);
-  const prof = { age, kg, cm, symptoms: syms };
+  const prof = { age, symptoms: syms };
   LS.set('hormProfile', prof);
-  // Recalcular ageGroup en resultado de quiz si existe
-  const result = LS.get('skinResult');
-  if (result && age) {
-    const a = parseInt(age);
-    let ag = '20s';
-    if (a < 20) ag = 'teen';
-    else if (a < 30) ag = '20s';
-    else if (a < 40) ag = '30s';
-    else ag = '40s';
-    result.age = ag;
-    LS.set('skinResult', result);
+  // Guardar los síntomas en el período más reciente del historial
+  var hist = LS.get('cicloHistorial') || [];
+  if (hist.length) {
+    hist[hist.length - 1].sintomas = syms;
+    LS.set('cicloHistorial', hist);
   }
   checkNudge();
-  renderBienestar(syms);
-  showToast('Listo ✨ Mirá tus sugerencias para hoy');
-  // Llevar la vista a las sugerencias generadas
+  renderCicloHistorial();
+  showToast('Síntomas guardados ✨');
   setTimeout(function() {
     var el = document.getElementById('ciclo-bienestar');
     if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 150);
 }
 
-// Sugerencias de bienestar concretas segun lo que la usuaria marca hoy
-var BIENESTAR_SUGERENCIAS = {
-  'Cólicos':       [{e:'🔥',t:'Aplicá una bolsa de agua caliente en la zona baja del abdomen, alivia bastante.'},{e:'🍵',t:'Probá un té de jengibre o manzanilla, ayudan con el dolor.'}],
-  'Cansancio':     [{e:'😴',t:'Date permiso para descansar. Una siesta corta de 20 min recarga sin dejarte atontada.'},{e:'💧',t:'Tomá agua: a veces el cansancio es deshidratación disfrazada.'}],
-  'Retención':     [{e:'💧',t:'Tomá mucha agua durante el día, ayuda a tu cuerpo a soltar líquidos.'},{e:'🚶‍♀️',t:'Una caminata suave de 15 min activa la circulación y baja la hinchazón.'}],
-  'Granitos':      [{e:'🌸',t:'No los toques ni aprietes. Si querés, parche hidrocoloide y a otra cosa.'},{e:'🧴',t:'Mantené tu rutina simple y calmante estos días, sin productos nuevos.'}],
-  'Irritabilidad': [{e:'🧘‍♀️',t:'Probá 5 min de respiración o yoga suave, baja la tensión enseguida.'},{e:'🍫',t:'Date un gusto chico sin culpa, un cuadradito de chocolate amargo va perfecto.'}],
-  'Náuseas':       [{e:'🍵',t:'Un té de jengibre tibio, de a sorbos, suele asentar el estómago.'},{e:'🍪',t:'Comé algo liviano y seco (galletitas de arroz) antes de que empeore.'}],
-  'Sensibilidad':  [{e:'💜',t:'Sé amable con vos hoy. Bajá una marcha, no te exijas de más.'},{e:'🛁',t:'Un baño tibio o una ducha relajada te puede vender muy bien.'}],
-  'Calores':       [{e:'💧',t:'Tomá agua fresca y vestite con capas livianas que puedas sacarte.'},{e:'🌬️',t:'Buscá un lugar ventilado, evita el calor extra estos días.'}],
-  'Dolores cabeza':[{e:'💧',t:'Tomá agua: muchos dolores de cabeza arrancan por falta de hidratación.'},{e:'🌙',t:'Bajá la luz de la pantalla y descansá los ojos unos minutos.'}],
-  'Hinchazón':     [{e:'🚶‍♀️',t:'Una caminata corta de 15 min ayuda a desinflamar.'},{e:'🧂',t:'Bajá un poco la sal hoy, ayuda con la retención e hinchazón.'}],
-  'Insomnio':      [{e:'🍵',t:'Un té de tilo o manzanilla un rato antes de dormir relaja.'},{e:'📵',t:'Dejá el teléfono 30 min antes de acostarte, te va a costar menos dormir.'}],
-  'Antojos':       [{e:'🍫',t:'Si tenés antojo, dáselo en porción chica, sin culpa. Es normal estos días.'},{e:'🥜',t:'Tené a mano un snack rico y nutritivo (fruta, frutos secos) para acompañar.'}],
-  'Energía':       [{e:'🚶‍♀️',t:'Aprovechá la energía: una caminata de 15 min o algo de movimiento te va a sentar genial.'},{e:'🎯',t:'Buen día para encarar eso que venías postergando.'}],
-  'Buen humor':    [{e:'☀️',t:'Disfrutá el día. Aprovechá para hacer algo que te guste.'},{e:'🥳',t:'Buen momento para ver gente o planear algo lindo.'}],
-  'Piel luminosa': [{e:'📸',t:'Tu piel está en su mejor momento, aprovechalo.'},{e:'☀️',t:'No te olvides del protector solar para mantenerla así.'}],
-  'Libido alta':   [{e:'💜',t:'Es una fase natural del ciclo, disfrutá tu cuerpo.'}],
-  'Motivación':    [{e:'💪',t:'Canalizá esa motivación: movimiento, un proyecto, lo que tengas ganas.'},{e:'🚶‍♀️',t:'Buen día para una caminata o algo de ejercicio suave.'}],
-  'Creatividad':   [{e:'🎨',t:'Aprovechá para crear algo: escribir, dibujar, lo que te inspire.'}],
-  'Sociable':      [{e:'🥳',t:'Buen día para conectar con gente que querés.'}],
-  'Calma':         [{e:'🧘‍♀️',t:'Aprovechá la calma con unos minutos de yoga o respiración.'},{e:'🍵',t:'Un té tranquilo y un rato para vos, perfecto.'}],
-  'Concentración': [{e:'🎯',t:'Tu cabeza está clara: buen momento para tareas que requieren foco.'}]
+// Consejos de bienestar segun la FASE del ciclo (no segun sintomas marcados)
+var BIENESTAR_POR_FASE = {
+  0: [ // Menstrual
+    {e:'🔥',t:'Si tenés cólicos, una bolsa de agua caliente en el abdomen alivia bastante.'},
+    {e:'🍵',t:'Un té de jengibre o manzanilla ayuda con el dolor y te relaja.'},
+    {e:'😴',t:'Descansá lo que necesites. Tu cuerpo está trabajando, bajá una marcha.'},
+    {e:'💧',t:'Tomá mucha agua, ayuda con la hinchazón y la retención.'}
+  ],
+  1: [ // Folicular
+    {e:'⚡',t:'Tu energía empieza a subir. Buen momento para moverte: caminata o ejercicio suave.'},
+    {e:'🎯',t:'Aprovechá la claridad mental para encarar proyectos o tareas que requieren foco.'},
+    {e:'💧',t:'Mantené la hidratación durante el día, siempre suma.'}
+  ],
+  2: [ // Ovulación
+    {e:'✨',t:'Estás en tu mejor momento del ciclo. Aprovechá la energía y el buen ánimo.'},
+    {e:'🥳',t:'Buen momento para ver gente, salir o planear algo lindo.'},
+    {e:'💧',t:'Seguí tomando agua y cuidá tu piel, que está luminosa estos días.'}
+  ],
+  3: [ // Lútea
+    {e:'🧘‍♀️',t:'Puede venir algo de irritabilidad. Probá 5 min de respiración o yoga suave.'},
+    {e:'🚶‍♀️',t:'Una caminata de 15 min ayuda con la hinchazón y el ánimo.'},
+    {e:'🍫',t:'Si tenés antojos, dáselos en porción chica y sin culpa. Es normal.'},
+    {e:'💧',t:'Bajá un poco la sal y tomá agua para la retención de estos días.'}
+  ]
 };
 
-function renderBienestar(syms) {
+function renderBienestar(phase) {
   var cont = document.getElementById('ciclo-bienestar');
   var list = document.getElementById('ciclo-bienestar-list');
   if (!cont || !list) return;
-  if (!syms || syms.length === 0) {
-    cont.style.display = '';
-    list.innerHTML = '<div class="tip-item"><div class="tip-item-icon">🌸</div><div class="tip-item-text">Tomá mucha agua hoy y date un momento para vos. Cuando marques cómo te sentís, Luna te sugiere cosas más específicas 💜</div></div>';
-    return;
+  var idx = phase ? PHASES.indexOf(phase) : -1;
+  var items = BIENESTAR_POR_FASE[idx];
+  if (!items) {
+    // Sin fase conocida (ciclo no registrado): consejo general suave
+    items = [
+      {e:'💧',t:'Tomá agua durante el día, siempre ayuda 🌸'},
+      {e:'🌙',t:'Date un momento para vos hoy. Cuando registres tu ciclo, Luna te da consejos más precisos.'}
+    ];
   }
-  // Reunir sugerencias evitando repetir el mismo texto
-  var vistas = {};
-  var items = [];
-  syms.forEach(function(s) {
-    (BIENESTAR_SUGERENCIAS[s] || []).forEach(function(sug) {
-      if (!vistas[sug.t]) { vistas[sug.t] = true; items.push(sug); }
-    });
-  });
-  // Tip universal de cierre
-  items.push({ e: '💧', t: 'Y no te olvides: tomar agua durante el día siempre ayuda 🌸' });
   cont.style.display = '';
   list.innerHTML = items.map(function(it) {
     return '<div class="tip-item"><div class="tip-item-icon">' + it.e + '</div><div class="tip-item-text">' + it.t + '</div></div>';
