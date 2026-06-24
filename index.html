@@ -338,6 +338,7 @@ select.input-field{appearance:none}
       <div class="card-title" id="home-greeting">Hola 🌸</div>
       <div class="card-body" id="home-greeting-sub">Tu momento de cuidarte 🌸</div>
     </div>
+    <div id="ciclo-home"></div>
     <div class="card" id="checkin-card">
       <div class="card-label">🌿 CHECK-IN DIARIO</div>
       <div style="font-size:14px;margin-bottom:4px;color:var(--cream)">¿Cómo está tu piel hoy?</div>
@@ -376,6 +377,7 @@ select.input-field{appearance:none}
       <div class="streak-item"><div class="streak-val" id="streak-phase">—</div><div class="streak-lbl">Luna</div></div>
     </div>
     <div id="sistema-rachas"></div>
+    <div id="insight-temprano"></div>
     <div style="margin:0 16px 12px;display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px">
       <span style="font-size:18px;flex-shrink:0">🌠</span>
       <div style="font-size:12px;color:var(--cream-dim);line-height:1.5" id="daily-tip">Cargando...</div>
@@ -1702,8 +1704,11 @@ function generarMensajeLuna() {
 
   // Mensaje segun fase del ciclo
   if (ciclo && ciclo.start) {
+    var stats = (typeof calcularCicloStats === 'function') ? calcularCicloStats() : null;
     var fase = getCurrentPhase(ciclo.start);
-    if (fase) {
+    if (stats && stats.atrasada) {
+      mensajes.push('Tu período viene un poco atrasado. Suele ser normal — cuidate suave y, si te preocupa, consultá con tu médica 💜');
+    } else if (fase) {
       if (fase.name.indexOf('Lútea') >= 0) {
         mensajes.push('Estás en fase lútea — puede aparecer algo de grasa o algún granito. Es normal, sumá ingredientes calmantes 🌸');
       } else if (fase.name.indexOf('Menstrual') >= 0) {
@@ -1716,13 +1721,9 @@ function generarMensajeLuna() {
     }
   }
 
-  // Mensaje segun racha de check-ins
-  var racha = calcularRacha();
-  if (racha >= 7) {
-    mensajes.push('¡Llevás ' + racha + ' días seguidos registrando tu piel! Sos constante 💜');
-  } else if (racha >= 3) {
-    mensajes.push('Vas ' + racha + ' días seguidos de check-in. ¡Seguí así! 🌸');
-  }
+  // (La racha de check-ins ya se muestra en el contador y en el sistema de rachas;
+  //  no la repetimos acá para no saturar la home)
+
 
   // Si no hizo diagnostico
   if (!result) {
@@ -2249,10 +2250,25 @@ function renderCiclo() {
     const hero = document.getElementById('ciclo-phase-hero');
     if (hero && phase) {
       hero.style.display='';
+      var stats = (typeof calcularCicloStats === 'function') ? calcularCicloStats() : null;
+      var dia = getCycleDay(ciclo.start);
       document.getElementById('ciclo-phase-emoji').textContent = phase.emoji;
-      document.getElementById('ciclo-phase-name').textContent = phase.name;
-      document.getElementById('ciclo-phase-day').textContent = `Día ${getCycleDay(ciclo.start)} del ciclo`;
-      document.getElementById('ciclo-phase-desc').textContent = phase.desc;
+      document.getElementById('ciclo-phase-name').textContent = (stats && stats.atrasada) ? 'Período atrasado' : phase.name;
+      var diaTxt = 'Día ' + dia + ' del ciclo';
+      var desc = phase.desc;
+      if (stats && stats.desactualizado) {
+        document.getElementById('ciclo-phase-name').textContent = 'Actualizá tu ciclo';
+        diaTxt = 'Pasó más de un ciclo desde tu último registro';
+        desc = 'Registrá tu período actual abajo para que Luna vuelva a calcular tu fase y la fecha estimada 🌸';
+      } else if (stats && stats.atrasada) {
+        var dRet = Math.abs(stats.diasHasta);
+        diaTxt = 'Día ' + dia + ' · atrasado ' + dRet + (dRet === 1 ? ' día' : ' días');
+        desc = stats.estimado
+          ? 'Tu período pasó la fecha estimada. Es solo un cálculo hasta que registres más ciclos — los atrasos son normales y pueden deberse a muchas cosas. Si te preocupa, hablalo con tu médica 💜'
+          : 'Tu período pasó la fecha esperada según tu promedio. Casi siempre es normal, pero si te preocupa, registralo cuando llegue o consultá con tu médica 💜';
+      }
+      document.getElementById('ciclo-phase-day').textContent = diaTxt;
+      document.getElementById('ciclo-phase-desc').textContent = desc;
       renderCicloTips(phase);
       renderBienestar(phase);
     }
@@ -2262,15 +2278,16 @@ function renderCiclo() {
 }
 
 function getCycleDay(startStr) {
-  const start = new Date(startStr);
-  const today = new Date();
+  const start = new Date(startStr); start.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
   const diff = Math.floor((today - start) / 86400000);
-  return (diff % 28) + 1;
+  return diff + 1; // día real desde el último período (sin reiniciar a los 28)
 }
 
 function getCurrentPhase(startStr) {
   const day = getCycleDay(startStr);
-  return PHASES.find(p => day >= p.days[0] && day <= p.days[1]) || PHASES[3];
+  // Si el día supera el rango de fases, la usuaria está en lútea tardía / premenstrual
+  return PHASES.find(p => day >= p.days[0] && day <= p.days[1]) || PHASES[PHASES.length-1];
 }
 
 function saveCiclo() {
@@ -2495,7 +2512,7 @@ function toggleSymptom(el) { el.classList.toggle('active'); }
 
 function renderCicloTips(phase) {
   const tips = {
-    0: ['Descansá más, priorizá el sueño','Evitá exfoliantes fuertes — la piel está más sensible','Hidratación intensa, productos calmantes','Tomá mucha agua para reducir retención'],
+    0: ['Descansá más, priorizá el sueño','Evitá exfoliantes fuertes — la piel está más sensible','Hidratación intensa, productos calmantes','Sumá un sérum de ácido hialurónico si sentís la piel tirante'],
     1: ['Probá productos nuevos — la piel tolera mejor ahora','Es buen momento para exfoliar suavemente','Podés sumar vitamina C en la mañana','La piel se ve mejor — aprovechalo'],
     2: ['Luzcas lo mejor que podés lucir este mes','SPF obligatorio — el sol daña más','Podés ir sin maquillaje con confianza','Aprovechá para fotos, salidas o eventos'],
     3: ['Usá SPF aunque estés en casa — la progesterona no ayuda','Si aparecen granitos, no los aprietes — usá parche hidrocoloide','Reducí el azúcar y la sal si notás retención','Elegí productos calmantes con centella o aloe']
@@ -3143,8 +3160,217 @@ function renderIngredienteDestacado() {
 }
 
 function checkNudge() {
-  // Recordatorio suave si hay periodo proximo (sin notificaciones push, solo visual)
-  // Por ahora no hace nada intrusivo
+  // Mejora 1 + 2: tarjeta de ciclo viva e insight temprano en la home
+  renderCicloHome();
+  renderInsightTemprano();
+}
+
+// ─── MEJORA 1: TARJETA DE CICLO VIVA EN LA HOME ───────────────
+// Usa el promedio REAL de la usuaria (no 28 fijo). Si todavía no
+// hay datos, invita a registrar en lugar de inventar una fecha.
+function calcularCicloStats() {
+  var ciclo = LS.get('ciclo');
+  var hist = (LS.get('cicloHistorial') || []).slice().sort(function(a,b){
+    return new Date(a.start) - new Date(b.start);
+  });
+  // Punto de partida: último período registrado
+  var ultStart = (ciclo && ciclo.start) ? ciclo.start
+                 : (hist.length ? hist[hist.length-1].start : null);
+  if (!ultStart) return null;
+
+  // Promedio de ciclo (inicio a inicio), válido entre 15 y 45 días
+  var durs = [];
+  for (var i = 1; i < hist.length; i++) {
+    var cd = Math.round((new Date(hist[i].start) - new Date(hist[i-1].start)) / 86400000);
+    if (cd > 15 && cd < 45) durs.push(cd);
+  }
+  var promCiclo = durs.length
+    ? Math.round(durs.reduce(function(a,b){return a+b;},0) / durs.length)
+    : 28; // default suave hasta tener historial propio
+  var estimado = durs.length === 0; // todavía usamos el promedio genérico
+
+  // Día actual del ciclo (real, desde el último período)
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var start0 = new Date(ultStart); start0.setHours(0,0,0,0);
+  var diaActual = Math.floor((hoy - start0) / 86400000) + 1;
+  if (diaActual < 1) diaActual = 1;
+
+  // Fase actual: mapeo a PHASES; si pasó el promedio, está atrasada
+  var fase = PHASES.find(function(p){
+    return diaActual >= p.days[0] && diaActual <= p.days[1];
+  }) || PHASES[PHASES.length-1];
+
+  // Próximo período y días que faltan
+  var prox = new Date(start0);
+  prox.setDate(prox.getDate() + promCiclo);
+  var diasHasta = Math.round((prox - hoy) / 86400000);
+
+  return {
+    diaActual: diaActual, fase: fase, promCiclo: promCiclo,
+    diasHasta: diasHasta, prox: prox, estimado: estimado,
+    atrasada: diasHasta < 0,
+    // Atraso muy grande: probablemente dejó de registrar; pedimos actualizar
+    desactualizado: diaActual > (promCiclo + 21)
+  };
+}
+
+function renderCicloHome() {
+  var cont = document.getElementById('ciclo-home');
+  if (!cont) return;
+  var s = calcularCicloStats();
+
+  // Sin datos de ciclo: invitación cálida, no una fecha inventada
+  if (!s) {
+    cont.innerHTML =
+      '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">' +
+        '<div class="card-label">🌙 TU CICLO</div>' +
+        '<div style="font-size:14px;color:var(--cream);margin-bottom:4px">Registrá tu período y Luna te acompaña</div>' +
+        '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Vas a ver en qué fase estás y cuántos días faltan para el próximo, acá mismo cada día 🌸</div>' +
+        '<div style="margin-top:10px;font-size:12px;color:var(--purple-light)">Registrar mi ciclo →</div>' +
+      '</div>';
+    return;
+  }
+
+  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  // Mensaje principal sobre la predicción
+  var head, sub;
+  if (s.desactualizado) {
+    head = 'Hace un tiempo que no registrás tu período';
+    sub = 'Actualizá tu ciclo para que Luna vuelva a acompañarte con la fase y la fecha 🌸';
+  } else if (s.atrasada) {
+    var dRet = Math.abs(s.diasHasta);
+    head = 'Tu período está atrasado ' + dRet + (dRet === 1 ? ' día' : ' días');
+    sub = s.estimado
+      ? 'Es solo una estimación hasta que registres más ciclos. Los atrasos son normales y pueden deberse a muchas cosas 💜'
+      : 'Puede pasar y casi siempre es normal. Si te preocupa, registralo cuando llegue 💜';
+  } else if (s.diasHasta === 0) {
+    head = 'Tu período podría llegar hoy 🩸';
+    sub = 'Tené a mano lo que necesites. Hoy tu piel pide calma e hidratación.';
+  } else if (s.diasHasta <= 3) {
+    head = 'Te viene en ' + s.diasHasta + (s.diasHasta === 1 ? ' día' : ' días');
+    sub = 'Estás en fase ' + s.fase.name + '. Buen momento para sumar ingredientes calmantes y bajar un cambio 🍂';
+  } else {
+    head = 'Te viene en ' + s.diasHasta + ' días';
+    sub = 'Día ' + s.diaActual + ' de tu ciclo · fase ' + s.fase.name;
+  }
+
+  // Línea de piel según la fase
+  var pielFase = {
+    'Menstrual 🩸': 'Hoy: piel más seca o sensible. Priorizá hidratación suave.',
+    'Folicular 🌱': 'Hoy: tu piel mejora y tolera mejor activos nuevos.',
+    'Ovulación ✨': 'Hoy: piel en su mejor momento, luminosa y pareja.',
+    'Lútea 🍂': 'Hoy: puede aparecer grasa o algún granito. Es normal, sumá calma.'
+  };
+  var pielLinea = (!s.atrasada && pielFase[s.fase.name]) ? pielFase[s.fase.name] : '';
+
+  // Punto de fase dentro del ciclo (barrita)
+  var idx = PHASES.indexOf(s.fase);
+  var pct = Math.min(100, Math.round((s.diaActual / s.promCiclo) * 100));
+
+  var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
+  html += '<div class="card-label">' + s.fase.emoji + ' TU CICLO</div>';
+  html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:2px">' + head + '</div>';
+  html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5;margin-bottom:12px">' + sub + '</div>';
+  if (!s.desactualizado) {
+    // Barra de progreso del ciclo
+    html += '<div style="height:6px;background:var(--surface2);border-radius:6px;overflow:hidden;margin-bottom:6px">';
+    html += '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,var(--purple),var(--pink))"></div></div>';
+    html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--cream-dim);letter-spacing:.5px">';
+    html += '<span>Día ' + s.diaActual + '</span>';
+    if (!s.atrasada) html += '<span>Próximo: ' + s.prox.getDate() + ' ' + meses[s.prox.getMonth()].slice(0,3) + (s.estimado ? ' (est.)' : '') + '</span>';
+    html += '</div>';
+  } else {
+    html += '<div style="font-size:12px;color:var(--purple-light)">Actualizar mi ciclo →</div>';
+  }
+  if (pielLinea) {
+    html += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--purple-light);line-height:1.5">✨ ' + pielLinea + '</div>';
+  }
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+// ─── MEJORA 2: INSIGHT TEMPRANO (desde el 3er check-in) ───────
+// Da valor en la primera semana, mucho antes del motor de 10/30
+// check-ins. Determinístico sobre datos reales, sin inventar nada.
+function renderInsightTemprano() {
+  var cont = document.getElementById('insight-temprano');
+  if (!cont) return;
+  var checkins = LS.get('checkins') || {};
+  var entries = Object.keys(checkins).map(function(k){ return checkins[k]; })
+    .filter(function(c){ return c && c.ts; })
+    .sort(function(a,b){ return new Date(a.ts) - new Date(b.ts); });
+  var total = entries.length;
+  var racha = (typeof calcularRacha === 'function') ? calcularRacha() : 0;
+
+  // Etiquetas legibles de estado de piel
+  var SKIN_LBL = {
+    oily: { t:'luminosa', e:'🌟' }, dry: { t:'algo seca', e:'🌵' },
+    acne: { t:'con algún granito', e:'🔴' }, sensitive: { t:'sensible', e:'🌸' }
+  };
+
+  function card(label, titulo, sub) {
+    return '<div class="card">' +
+      '<div class="card-label">🌱 ' + label + '</div>' +
+      '<div style="font-size:14px;color:var(--cream);margin-bottom:4px">' + titulo + '</div>' +
+      '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">' + sub + '</div>' +
+    '</div>';
+  }
+
+  // 0 registros: no mostramos nada (la home ya invita al check-in)
+  if (total === 0) { cont.innerHTML = ''; return; }
+
+  // 1-2 registros: aliento concreto hacia el primer patrón
+  if (total < 3) {
+    var faltan = 3 - total;
+    cont.innerHTML = card('LUNA TE CONOCE',
+      'Ya llevás ' + total + (total === 1 ? ' registro' : ' registros') + ' 🌙',
+      'Con ' + faltan + (faltan === 1 ? ' día' : ' días') + ' más, Luna empieza a notar cómo viene tu piel.');
+    return;
+  }
+
+  // A partir de 10, el motor de patrones completo (en Mi piel) toma la posta
+  if (total >= 10) {
+    var pat = (typeof analizarPatronCheckins === 'function') ? analizarPatronCheckins() : null;
+    if (pat) {
+      cont.innerHTML = card('LUNA TE CONOCE',
+        'Ya tenés suficientes registros para ver tus patrones 🌙',
+        'Entrá a Mi piel para ver el análisis completo de cómo cambia tu piel.');
+      return;
+    }
+  }
+
+  // 3-9 registros: insight real con los últimos 7 check-ins
+  var recientes = entries.slice(-7);
+  var conteo = {};
+  var spfSi = 0, lavadoSi = 0;
+  recientes.forEach(function(c){
+    if (c.skin) conteo[c.skin] = (conteo[c.skin] || 0) + 1;
+    if (c.spf) spfSi++;
+    if (c.lavado) lavadoSi++;
+  });
+  var dom = Object.keys(conteo).sort(function(a,b){ return conteo[b]-conteo[a]; })[0];
+  var titulo, sub;
+
+  if (dom && conteo[dom] >= 2 && SKIN_LBL[dom]) {
+    var lbl = SKIN_LBL[dom];
+    titulo = 'Estos días tu piel viene mayormente ' + lbl.t + ' ' + lbl.e;
+    // Si hay ciclo, anclamos el insight a la fase actual (sin sobreafirmar)
+    var s = calcularCicloStats();
+    if (s && !s.atrasada) {
+      sub = 'Coincide con tu fase ' + s.fase.name + '. Seguí registrando y vas a ver el patrón completo a lo largo del ciclo.';
+    } else {
+      sub = 'Seguí registrando unos días más y Luna empieza a cruzarlo con tu ciclo.';
+    }
+  } else if (spfSi >= 2) {
+    titulo = 'Vas firme con el protector solar ☀️';
+    sub = 'Usaste SPF en ' + spfSi + ' de tus últimos ' + recientes.length + ' registros. Es el mejor hábito anti-edad que existe.';
+  } else {
+    titulo = '¡Ya van ' + total + ' check-ins! 🌙';
+    sub = racha >= 2 ? ('Y ' + racha + ' días seguidos. Tu constancia es lo que más cuida tu piel.')
+                     : 'Cada registro ayuda a Luna a conocer tu piel un poco más.';
+  }
+  cont.innerHTML = card('LUNA TE CONOCE', titulo, sub);
 }
 
 function openWhatsApp(prod) {
