@@ -1694,13 +1694,10 @@ function generarMensajeLuna() {
   var ciclo = LS.get('ciclo');
   var diario = LS.get('diario') || [];
   var name = profile.name || '';
-  var hour = new Date().getHours();
-  var saludo = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
-  var nombre = name ? ', ' + name : '';
   var mensajes = [];
 
-  // Mensaje base segun hora
-  mensajes.push(saludo + nombre + ' 🌙');
+  // (El saludo con el nombre ya aparece en la tarjeta de arriba; acá no lo repetimos.
+  //  "Luna te dice" arranca directo con algo útil: tu fase, tu piel o un recordatorio.)
 
   // Mensaje segun fase del ciclo
   if (ciclo && ciclo.start) {
@@ -2404,14 +2401,17 @@ function deleteCicloHist(start) {
 }
 
 function iniciarMenstruacion() {
-  // Registra el período de hoy y abre los síntomas en una sola acción
+  // "Me vino el período hoy": siempre arranca un ciclo nuevo con la fecha de hoy,
+  // sin importar qué fecha vieja haya quedado en el campo.
   var hoy = new Date();
   var iso = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
   var startEl = document.getElementById('ciclo-start');
-  if (startEl && !startEl.value) startEl.value = iso;
-  var s = startEl ? startEl.value : iso;
+  if (startEl) startEl.value = iso; // pisar siempre con hoy
+  var endEl = document.getElementById('ciclo-end');
+  if (endEl) endEl.value = ''; // ciclo nuevo, sin fin todavía
+  var s = iso;
   LS.set('ciclo', { start: s, end: '' });
-  // Guardar en historial sin duplicar
+  // Guardar en historial sin duplicar (clave: la fecha de inicio)
   var hist = LS.get('cicloHistorial') || [];
   var existe = hist.some(function(c) { return c.start === s; });
   if (!existe) {
@@ -2430,7 +2430,7 @@ function iniciarMenstruacion() {
   }
   renderCiclo();
   initNotificaciones();
-  showToast('Período registrado 🩸 Marcá cómo te sentís');
+  showToast('Período de hoy registrado 🩸 Marcá cómo te sentís');
 }
 
 function saveHormProfile() {
@@ -3085,14 +3085,21 @@ function updateHomeGreeting() {
 
   // Momento del día → saludo, etiqueta y emoji coherentes entre sí
   var saludo, label, emoji, subs;
-  if (hour < 12) {
+  if (hour < 5) {
+    saludo = 'Buenas noches'; label = 'DE MADRUGADA'; emoji = '🌙';
+    subs = [
+      'Es de madrugada — tu piel se repara mientras dormís 🌙',
+      'Si podés, descansá un poco más. El sueño cuida tu piel 💜',
+      'Un mimo para vos: hidratá y volvé a la cama 🌸'
+    ];
+  } else if (hour >= 5 && hour < 12) {
     saludo = 'Buenos días';  label = 'BUENOS DÍAS';  emoji = '🌅';
     subs = [
       'Arrancá el día cuidando tu piel 🌸',
       'Un buen día empieza con tu rutina de mañana ☀️',
       'No te olvides del protector solar hoy ☀️'
     ];
-  } else if (hour < 19) {
+  } else if (hour >= 12 && hour < 19) {
     saludo = 'Buenas tardes'; label = 'BUENAS TARDES'; emoji = '☀️';
     subs = [
       '¿Cómo viene tu piel hoy? 🌸',
