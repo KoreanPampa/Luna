@@ -119,6 +119,19 @@ select.input-field{appearance:none}
 .streak-item{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center}
 .streak-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--purple-light)}
 .streak-lbl{font-size:10px;color:var(--cream-dim);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
+.skintrend-dots{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.skintrend-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.skintrend-dot.empty{background:transparent;border:1px solid var(--border)}
+.skintrend-dot.today{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--purple-light)}
+.skintrend-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;font-size:10px;color:var(--cream-dim)}
+.skintrend-legend span{display:inline-flex;align-items:center;gap:5px}
+.skintrend-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+@keyframes lunaPop{0%{transform:scale(.55);opacity:0}45%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}
+.hito-overlay{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;background:rgba(12,11,20,.82);backdrop-filter:blur(8px);padding:32px;transition:opacity .35s}
+.hito-card{background:var(--surface);border:1px solid var(--border);border-radius:26px;padding:34px 28px;text-align:center;max-width:320px;animation:lunaPop .55s cubic-bezier(.2,.8,.2,1) both;box-shadow:0 10px 48px rgba(155,127,212,.28)}
+.hito-emoji{font-size:60px;line-height:1.1;margin-bottom:10px;animation:moonFloat 4s ease-in-out infinite}
+.hito-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:var(--cream);margin-bottom:6px}
+.hito-sub{font-size:13px;color:var(--cream-dim);line-height:1.6}
 .nudge-card{background:linear-gradient(135deg,rgba(212,120,154,.1),rgba(212,168,67,.06));border:1px solid rgba(212,120,154,.25);border-radius:16px;padding:14px 16px;margin:0 16px 10px;display:flex;align-items:center;gap:12px}
 .nudge-icon{font-size:24px;flex-shrink:0}
 .nudge-text{font-size:12px;color:var(--cream-dim);line-height:1.5;flex:1}
@@ -339,6 +352,7 @@ select.input-field{appearance:none}
       <div class="card-body" id="home-greeting-sub">Tu momento de cuidarte 🌸</div>
     </div>
     <div id="ciclo-home"></div>
+    <div id="skin-trend-home"></div>
     <div class="card" id="checkin-card">
       <div class="card-label">🌿 CHECK-IN DIARIO</div>
       <div style="font-size:14px;margin-bottom:4px;color:var(--cream)">¿Cómo está tu piel hoy?</div>
@@ -3002,6 +3016,44 @@ function lanzarPetalos() {
 }
 
 function getMensajeSorpresa(racha) {
+  // 1) Mensajes de hito: si la racha llega a un número redondo, lo celebramos
+  var hitos = {
+    3:  'Tres días seguidos 🌒 ya estás construyendo el hábito.',
+    7:  'Una semana completa 🌓 tu piel y vos se están conociendo.',
+    14: 'Dos semanas 🌔 Luna ya aprende tus patrones.',
+    21: 'Tres semanas 🌕 esto ya es parte de tu rutina.',
+    30: 'Un mes entero 🌖 sos pura constancia ✨',
+    60: 'Dos meses 🌗 tus patrones de piel ya son clarísimos.',
+    90: 'Noventa días 🌟 tu dedicación es inspiradora.'
+  };
+  if (hitos[racha]) return hitos[racha];
+
+  // 2) Mensaje según la fase del ciclo (si hay datos): se siente personal
+  var stats = (typeof calcularCicloStats === 'function') ? calcularCicloStats() : null;
+  if (stats && stats.fase && !stats.atrasada && !stats.desactualizado) {
+    var porFase = {
+      'Menstrual 🩸': [
+        'Hoy tu piel pide calma. Hidratación suave y nada de exfoliantes fuertes 💜',
+        'Fase menstrual: bajá un cambio. Tu piel está más sensible y lo merece 🌙'
+      ],
+      'Folicular 🌱': [
+        'Tu piel está receptiva: buen día para sumar un activo nuevo 🌱',
+        'Fase folicular: tu piel mejora y tolera más. Aprovechá ✨'
+      ],
+      'Ovulación ✨': [
+        'Tu piel está en su mejor momento. Disfrutala y no te olvides del SPF ☀️',
+        'Ovulación: luminosa y pareja. Hoy te brilla la cara 🌕'
+      ],
+      'Lútea 🍂': [
+        'Si aparece algún granito, no lo aprietes. Sumá centella o aloe 🌿',
+        'Fase lútea: puede venir grasa o retención. Es normal, sumá calma 🍂'
+      ]
+    };
+    var arr = porFase[stats.fase.name];
+    if (arr && arr.length) return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // 3) Mensajes generales (elegidos al azar, ya no siempre el mismo del día)
   var mensajes = [
     '¿Sabías? La piel se regenera completamente cada 28 días, casi como el ciclo lunar 🌙',
     'Tu constancia es lo que más cuida tu piel — más que cualquier producto caro ✨',
@@ -3014,9 +3066,10 @@ function getMensajeSorpresa(racha) {
     'Pequeños hábitos, grandes cambios. Tu piel lo nota 🌸',
     'Volvé mañana para seguir construyendo tu hábito 🌙'
   ];
-  // Mensaje según día del año para que cambie cada día
-  var dia = Math.floor(Date.now() / 86400000);
-  return mensajes[dia % mensajes.length];
+  if (racha >= 1) {
+    mensajes.push('Vas ' + racha + (racha === 1 ? ' día' : ' días') + ' seguidos. No rompas la magia 🌙');
+  }
+  return mensajes[Math.floor(Math.random() * mensajes.length)];
 }
 
 function confirmarCheckin() {
@@ -3070,6 +3123,11 @@ function doCheckin(label, skinKey, lavado, spf) {
   }
   renderLogros();
   renderRachaHome();
+  renderSkinTrend();
+  // Celebración de hito si la racha cruza a una fase lunar nueva
+  if (typeof celebrarHito === 'function') {
+    setTimeout(function() { celebrarHito(rachaActualPost); }, 700);
+  }
   showToast('Check-in guardado 🌸');
 }
 
@@ -3169,6 +3227,7 @@ function renderIngredienteDestacado() {
 function checkNudge() {
   // Mejora 1 + 2: tarjeta de ciclo viva e insight temprano en la home
   renderCicloHome();
+  renderSkinTrend();
   renderInsightTemprano();
 }
 
@@ -3293,8 +3352,145 @@ function renderCicloHome() {
   if (pielLinea) {
     html += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--purple-light);line-height:1.5">✨ ' + pielLinea + '</div>';
   }
+  // Anticipación: qué cambia próximamente (crea el "volvé mañana")
+  if (!s.atrasada && !s.desactualizado) {
+    var antic = getAnticipacionFase(s);
+    if (antic) {
+      html += '<div style="margin-top:8px;font-size:12px;color:var(--pink);line-height:1.5">🔮 ' + antic + '</div>';
+    }
+  }
   html += '</div>';
   cont.innerHTML = html;
+}
+
+// Calcula la próxima transición de fase y devuelve un texto cálido.
+function getAnticipacionFase(s) {
+  if (!s || !s.fase) return '';
+  var idx = PHASES.indexOf(s.fase);
+  // Días hasta que termina la fase actual = inicio de la próxima fase
+  var finFase = s.fase.days[1];
+  var diasParaSig = finFase - s.diaActual + 1;
+  var tipsSig = {
+    'Menstrual 🩸': 'momento de calma e hidratación suave',
+    'Folicular 🌱': 'buen momento para sumar un activo nuevo',
+    'Ovulación ✨': 'tu piel en su punto más luminoso',
+    'Lútea 🍂': 'conviene sumar ingredientes calmantes'
+  };
+  // Si no es la última fase y la transición es cercana, anticipamos la próxima fase
+  if (idx > -1 && idx < PHASES.length - 1 && diasParaSig >= 1 && diasParaSig <= 4) {
+    var sig = PHASES[idx + 1];
+    var cuando = diasParaSig === 1 ? 'Mañana' : ('En ' + diasParaSig + ' días');
+    return cuando + ' entrás en fase ' + sig.name + ' — ' + (tipsSig[sig.name] || 'tu piel cambia un poco') + '.';
+  }
+  // Si está en la última fase, anticipamos el próximo período
+  if (idx === PHASES.length - 1 && typeof s.diasHasta === 'number' && s.diasHasta >= 1 && s.diasHasta <= 4) {
+    return (s.diasHasta === 1 ? 'Mañana' : ('En ' + s.diasHasta + ' días')) + ' arranca un ciclo nuevo 🌑 — buen momento para volver a la calma.';
+  }
+  return '';
+}
+
+// ─── Mini-tendencia de piel del ciclo actual ─────────────────
+// Cada punto = un día del ciclo, coloreado por el estado de piel
+// que registraste. Hace que el check-in diario se sienta acumulativo.
+var SKIN_COLORS = {
+  oily:      { c: 'var(--gold)',         label: 'Brillante', emoji: '🌟' },
+  dry:       { c: 'var(--purple-light)', label: 'Seca',      emoji: '🌵' },
+  acne:      { c: 'var(--pink)',         label: 'Granitos',  emoji: '🔴' },
+  sensitive: { c: 'var(--purple)',       label: 'Sensible',  emoji: '🌸' }
+};
+function renderSkinTrend() {
+  var cont = document.getElementById('skin-trend-home');
+  if (!cont) return;
+  var s = (typeof calcularCicloStats === 'function') ? calcularCicloStats() : null;
+  var checkins = LS.get('checkins') || {};
+
+  // Necesitamos ciclo activo y al menos 2 registros para que valga la pena
+  var totalCheckins = Object.keys(checkins).length;
+  if (!s || s.desactualizado || totalCheckins < 2) { cont.innerHTML = ''; return; }
+
+  var ciclo = LS.get('ciclo');
+  var hist = (LS.get('cicloHistorial') || []);
+  var ultStart = (ciclo && ciclo.start) ? ciclo.start : (hist.length ? hist[hist.length-1].start : null);
+  if (!ultStart) { cont.innerHTML = ''; return; }
+
+  var start0 = new Date(ultStart); start0.setHours(0,0,0,0);
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var diasCiclo = Math.min(s.diaActual, s.promCiclo);
+
+  // Construir un punto por día del ciclo hasta hoy
+  var dotsHtml = '';
+  var registrados = 0;
+  var usados = {};
+  for (var d = 0; d < diasCiclo; d++) {
+    var fecha = new Date(start0);
+    fecha.setDate(fecha.getDate() + d);
+    var key = fecha.toDateString();
+    var ci = checkins[key];
+    var esHoy = fecha.getTime() === hoy.getTime();
+    if (ci && SKIN_COLORS[ci.skin]) {
+      registrados++;
+      usados[ci.skin] = true;
+      dotsHtml += '<span class="skintrend-dot' + (esHoy ? ' today' : '') + '" style="background:' + SKIN_COLORS[ci.skin].c + '" title="Día ' + (d+1) + '"></span>';
+    } else {
+      dotsHtml += '<span class="skintrend-dot empty' + (esHoy ? ' today' : '') + '" title="Día ' + (d+1) + ' · sin registro"></span>';
+    }
+  }
+
+  if (registrados < 2) { cont.innerHTML = ''; return; }
+
+  // Leyenda solo con los estados que aparecen
+  var legend = '';
+  Object.keys(SKIN_COLORS).forEach(function(k) {
+    if (usados[k]) {
+      legend += '<span><i style="background:' + SKIN_COLORS[k].c + '"></i>' + SKIN_COLORS[k].label + '</span>';
+    }
+  });
+
+  var html = '<div class="card">';
+  html += '<div class="card-label">🌙 TU PIEL EN ESTE CICLO</div>';
+  html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Cada punto es un día. Mirá cómo cambia tu piel a lo largo del ciclo 🌸</div>';
+  html += '<div class="skintrend-dots">' + dotsHtml + '</div>';
+  html += '<div class="skintrend-legend">' + legend + '</div>';
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+// ─── Celebración de hito de racha ────────────────────────────
+// Momento especial cuando la racha cruza a una fase lunar nueva.
+function celebrarHito(dias) {
+  var fase = (typeof getFaseLunar === 'function') ? getFaseLunar(dias) : null;
+  // Solo celebramos al CRUZAR el umbral de una fase (dias === fase.min)
+  var esUmbral = false;
+  if (typeof FASES_LUNARES !== 'undefined') {
+    for (var i = 0; i < FASES_LUNARES.length; i++) {
+      if (FASES_LUNARES[i].min === dias) { esUmbral = true; fase = FASES_LUNARES[i]; break; }
+    }
+  }
+  if (!esUmbral || !fase) return;
+  // Evitar repetir el mismo hito
+  if (LS.get('ultimoHitoCelebrado') === dias) return;
+  LS.set('ultimoHitoCelebrado', dias);
+
+  var overlay = document.createElement('div');
+  overlay.className = 'hito-overlay';
+  overlay.innerHTML =
+    '<div class="hito-card">' +
+      '<div class="hito-emoji">' + fase.emoji + '</div>' +
+      '<div class="hito-title">' + fase.nombre + '</div>' +
+      '<div class="hito-sub">' + dias + (dias === 1 ? ' día seguido' : ' días seguidos') + ' 🌙<br>' + fase.msg + '</div>' +
+    '</div>';
+  overlay.addEventListener('click', function() {
+    overlay.style.opacity = '0';
+    setTimeout(function() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 350);
+  });
+  document.body.appendChild(overlay);
+  // Cierre automático suave
+  setTimeout(function() {
+    if (overlay.parentNode) {
+      overlay.style.opacity = '0';
+      setTimeout(function() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 350);
+    }
+  }, 3800);
 }
 
 // ─── MEJORA 2: INSIGHT TEMPRANO (desde el 3er check-in) ───────
@@ -3759,7 +3955,10 @@ function programarNotificaciones() {
       if (!checkins[hoy]) {
         var ultima = LS.get('ultimaNotifCheckin');
         if (ultima !== hoy) {
-          enviarNotif('Recuerda tu check-in de hoy', 'Como esta tu piel? Tomate un minuto para registrarla en Luna');
+          var rachaNotif = (typeof calcularRacha === 'function') ? calcularRacha() : 0;
+          var notifTitulo = rachaNotif >= 2 ? ('Tu racha va en ' + rachaNotif + ' dias 🌙') : 'Tu check-in de hoy 🌙';
+          var notifCuerpo = rachaNotif >= 2 ? 'No la dejes hoy: un minuto y registras tu piel en Luna' : 'Como esta tu piel? Tomate un minuto para registrarla en Luna';
+          enviarNotif(notifTitulo, notifCuerpo);
           LS.set('ultimaNotifCheckin', hoy);
         }
       }
