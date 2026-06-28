@@ -271,6 +271,7 @@ select.input-field{appearance:none}
 </style>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 <div id="stars"></div>
@@ -732,21 +733,48 @@ select.input-field{appearance:none}
     <div class="modal-handle"></div>
     <div class="modal-title">🔐 Política de Privacidad</div>
     <div class="modal-body">
-      <h4>Responsable del tratamiento</h4>
-      <p>KoreanPampa, emprendimiento unipersonal con domicilio en General Acha, La Pampa, Argentina.</p>
-      <h4>Qué datos recopilamos</h4>
-      <p>Nombre, tipo de piel, edad, síntomas frecuentes, estado diario de la piel (check-ins) y fechas del ciclo menstrual.</p>
-      <h4>Dónde se almacenan</h4>
-      <p>Los datos se guardan en tu dispositivo (localStorage) y se sincronizan con servidores seguros de Google (Firebase/Firestore, con sede en Brasil — región southamerica-east1) para que no los pierdas si cambiás de dispositivo. Ningún dato se vende ni se comparte con terceros.</p>
-      <h4>Finalidad del tratamiento</h4>
-      <p>Los datos se usan exclusivamente para personalizar los consejos de skincare dentro de la app y para que puedas acceder a tu historial desde cualquier dispositivo. No se usan para publicidad ni para ningún otro fin comercial.</p>
-      <h4>Tus derechos — Ley 25.326</h4>
-      <p>En virtud de la Ley Nacional de Protección de Datos Personales N° 25.326, tenés derecho a acceder, rectificar y eliminar tus datos en cualquier momento. Podés borrar toda tu información desde la sección Yo → Eliminar mis datos. Para consultas adicionales podés contactar a KoreanPampa por WhatsApp.</p>
-      <h4>Menores de edad</h4>
-      <p>Esta aplicación no está destinada a personas menores de 13 años. Si sos menor de 18, recomendamos el uso con conocimiento de un adulto responsable.</p>
-      <h4>Cambios en esta política</h4>
-      <p>Cualquier modificación será notificada antes de entrar en vigencia.</p>
-      <p style="margin-top:12px;font-size:11px;color:var(--cream-dim)">Versión 1.0 · Junio 2026 · Luna App — KoreanPampa, General Acha, La Pampa, Argentina</p>
+      <h4>1. Responsable del tratamiento</h4>
+      <p>KoreanPampa, emprendimiento unipersonal con domicilio en General Acha, La Pampa, Argentina. Para cualquier consulta sobre tus datos podés escribir a <strong>[completá: tu correo de privacidad]</strong> o contactarnos por WhatsApp.</p>
+
+      <h4>2. Qué datos tratamos</h4>
+      <p>• <strong>Identificación:</strong> nombre y edad.<br>
+      • <strong>Datos de salud (sensibles):</strong> fechas y duración del ciclo menstrual, síntomas, tipo y estado diario de la piel (check-ins). <br>
+      • <strong>Uso de la app:</strong> rutina, diario, rachas y preferencias.<br>
+      • <strong>Técnicos:</strong> al cargar la app, tu navegador se conecta a Google (Firebase y Google Fonts), que puede registrar tu dirección IP por razones técnicas y de seguridad.</p>
+      <p style="margin-top:6px">Los datos del ciclo y de la piel son <strong style="color:var(--pink)">datos sensibles de salud</strong>. Por eso reciben una protección reforzada y los tratamos únicamente con tu consentimiento expreso.</p>
+
+      <h4>3. Base legal y consentimiento</h4>
+      <p>Tratamos tus datos sobre la base de tu <strong>consentimiento libre, expreso e informado</strong> (Ley 25.326, arts. 5 y 7; y, para usuarias de la UE, RGPD arts. 6.1.a y 9.2.a). Podés <strong>retirar tu consentimiento en cualquier momento</strong> eliminando tus datos o dándote de baja, sin que afecte la licitud del tratamiento previo.</p>
+
+      <h4>4. Para qué los usamos (finalidad)</h4>
+      <p>Exclusivamente para personalizar tus consejos cosméticos, mostrarte tu historial y sincronizarlo entre tus dispositivos. <strong>No vendemos tus datos, no los cedemos a terceros con fines comerciales ni los usamos para publicidad.</strong></p>
+
+      <h4>5. Dónde se almacenan y quién los procesa</h4>
+      <p>Se guardan en tu dispositivo (almacenamiento local) y se sincronizan con <strong>Google Firebase / Firestore</strong>, que actúa como <strong>encargado del tratamiento</strong> (proveedor de infraestructura) bajo contrato y sujeto a sus medidas de seguridad. Los servidores están en Brasil (región southamerica-east1).</p>
+      <p style="margin-top:6px"><strong>Cookies y almacenamiento local:</strong> Luna usa el almacenamiento local de tu navegador únicamente para que la app funcione (tu sesión, tu historial y tus preferencias). <strong>No utilizamos cookies de publicidad ni de seguimiento, ni herramientas de analítica de terceros</strong> que perfilen tu navegación, y no compartimos tu actividad con redes publicitarias.</p>
+      <h4>6. Transferencia internacional</h4>
+      <p>Al usar Google, tus datos pueden tratarse fuera de Argentina (Brasil y otros centros de Google). La transferencia se ampara en las cláusulas contractuales y compromisos de seguridad de Google. Si nos escribís, podemos darte más detalle sobre estas salvaguardas.</p>
+
+      <h4>7. Seguridad</h4>
+      <p>Aplicamos medidas razonables: cifrado en tránsito (HTTPS), almacenamiento gestionado por Google, control de acceso mediante un código personal e intransferible y minimización de datos. Ningún sistema es 100% infalible; ante una vulneración de seguridad que afecte tus datos, te lo notificaremos sin demora indebida y, cuando corresponda, lo informaremos a la autoridad.</p>
+
+      <h4>8. Cuánto tiempo los conservamos</h4>
+      <p>Conservamos tus datos mientras tu cuenta esté activa o hasta que los elimines. Si dejás de usar Luna por un período prolongado, podremos eliminarlos. También podés borrarlos vos misma en cualquier momento.</p>
+
+      <h4>9. Tus derechos</h4>
+      <p>Tenés derecho a <strong>acceder, rectificar, actualizar y suprimir</strong> tus datos, a <strong>oponerte</strong> a su tratamiento, a la <strong>portabilidad</strong> (exportarlos) y a <strong>retirar tu consentimiento</strong>. Lo podés ejercer directamente desde <em>Yo → Exportar / Eliminar mis datos</em>, o escribiéndonos. Responderemos las solicitudes de acceso en un máximo de 10 días corridos y las de rectificación o supresión en 5 días hábiles (Ley 25.326).</p>
+      <p style="margin-top:6px">Si considerás que no respetamos tus derechos, podés reclamar ante la <strong>Agencia de Acceso a la Información Pública (AAIP)</strong> de Argentina o iniciar una acción de habeas data (art. 43 de la Constitución Nacional). Las usuarias de la UE pueden reclamar ante la autoridad de control de su país.</p>
+
+      <h4>10. Personalización (perfilado)</h4>
+      <p>Luna analiza tus respuestas y tu historial para personalizar consejos cosméticos. Esto es un perfilado con fines de personalización; <strong>no tomamos decisiones automatizadas con efectos jurídicos sobre vos</strong>. Podés oponerte a esta personalización dejando de usar la evaluación.</p>
+
+      <h4>11. Menores de edad</h4>
+      <p>Luna no está destinada a personas menores de 13 años. Entre los 13 y los 18, su uso debe contar con el consentimiento y acompañamiento de quien ejerza la responsabilidad parental.</p>
+
+      <h4>12. Cambios en esta política</h4>
+      <p>Si modificamos esta política, te lo notificaremos dentro de la app antes de que entre en vigencia.</p>
+
+      <p style="margin-top:12px;font-size:11px;color:var(--cream-dim)">Versión 2.1 · Entrada en vigencia: [completá fecha] · Luna App — KoreanPampa, General Acha, La Pampa, Argentina</p>
     </div>
     <button class="btn btn-ghost btn-full" style="margin-top:16px" onclick="closeModal('modal-privacy')">Entendido</button>
   </div>
@@ -756,25 +784,32 @@ select.input-field{appearance:none}
     <div class="modal-handle"></div>
     <div class="modal-title">📄 Términos y Condiciones</div>
     <div class="modal-body">
-      <h4>1. Aceptación</h4>
-      <p>Al usar Luna aceptás estos Términos y Condiciones en su totalidad. Si no estás de acuerdo, no uses la aplicación.</p>
+      <h4>1. Aceptación de los Términos</h4>
+      <p>Al acceder o usar Luna aceptás estos Términos y Condiciones, junto con la <a onclick="closeModal('modal-terms');openModal('modal-privacy')">Política de Privacidad</a> y el <a onclick="closeModal('modal-terms');openModal('modal-medical')">Aviso Médico</a>, que forman parte integral de este acuerdo. Si no estás de acuerdo, no uses la aplicación.</p>
       <h4>2. Naturaleza del servicio — Herramienta cosmética orientativa</h4>
       <p>Luna es una herramienta digital de orientación cosmética. Las recomendaciones que brinda son de carácter <strong>estrictamente cosmético e informativo</strong> y están basadas en las preferencias y características indicadas por la usuaria.</p>
       <p style="margin-top:8px"><strong style="color:var(--pink)">Luna NO constituye, reemplaza ni simula un diagnóstico, asesoramiento, tratamiento ni prescripción médica o dermatológica de ningún tipo.</strong> Ante cualquier duda sobre condiciones de la piel, se recomienda consultar a un médico matriculado.</p>
       <p style="margin-top:8px">Esta aplicación no está habilitada para el ejercicio de la medicina ni de ninguna profesión de la salud conforme a la Ley 17.132 y normativa provincial concordante.</p>
-      <h4>3. Acceso a la app</h4>
-      <p>El acceso a Luna se otorga mediante un código personal e intransferible. KoreanPampa se reserva el derecho de revocar el acceso ante uso indebido o incumplimiento de estos términos.</p>
+      <h4>3. Elegibilidad y acceso</h4>
+      <p>El acceso a Luna se otorga mediante un código personal e intransferible. Luna no está destinada a personas menores de 13 años; entre los 13 y los 18 años, su uso requiere el acompañamiento de quien ejerza la responsabilidad parental (ver Política de Privacidad). KoreanPampa se reserva el derecho de revocar el acceso ante uso indebido o incumplimiento de estos Términos.</p>
+      <p style="margin-top:8px"><strong>Uso responsable:</strong> tu código es personal e intransferible; no lo compartas ni lo publiques. Te comprometés a no intentar acceder a los datos de otras usuarias ni a la infraestructura del servicio, a no realizar ingeniería inversa del código y a no interferir con el funcionamiento de la app ni usarla con fines ilícitos. El incumplimiento puede derivar en la revocación inmediata del acceso, sin perjuicio de las acciones que correspondan.</p>
       <h4>4. Productos cosméticos</h4>
-      <p>Los productos ofrecidos a través de KoreanPampa son cosméticos importados adquiridos a distribuidores habilitados en Argentina. KoreanPampa no se responsabiliza por reacciones alérgicas o adversas. Es responsabilidad de la usuaria verificar los ingredientes antes de usar un producto nuevo, especialmente si tiene piel sensible o condiciones dérmicas preexistentes.</p>
+      <p>Los productos ofrecidos a través de KoreanPampa son cosméticos importados adquiridos a distribuidores habilitados en Argentina y deben usarse conforme a sus instrucciones y a la normativa aplicable. KoreanPampa no se responsabiliza por reacciones alérgicas o adversas. Es responsabilidad de la usuaria verificar los ingredientes antes de usar un producto nuevo, especialmente si tiene piel sensible o condiciones dérmicas preexistentes.</p>
       <h4>5. Defensa del Consumidor — Ley 24.240</h4>
-      <p>En cumplimiento de la Ley Nacional de Defensa del Consumidor, garantizamos información veraz sobre precios y características de los productos. Ante cualquier inconveniente, podés contactarnos por WhatsApp para gestionar cambios o devoluciones dentro de los plazos legales.</p>
-      <h4>6. Datos personales — Ley 25.326</h4>
-      <p>Los datos personales ingresados en Luna son tratados conforme a la Ley de Protección de Datos Personales N° 25.326. No se comparten con terceros ni se usan con fines publicitarios. Podés solicitar acceso, rectificación o eliminación de tus datos en cualquier momento contactando a KoreanPampa.</p>
-      <h4>7. Propiedad intelectual</h4>
+      <p>En cumplimiento de la Ley Nacional de Defensa del Consumidor, garantizamos información veraz sobre precios y características de los productos. Ante cualquier inconveniente, podés contactarnos por WhatsApp para gestionar cambios o devoluciones dentro de los plazos legales. Los derechos que la ley reconoce a las consumidoras no pueden ser renunciados ni limitados por estos Términos.</p>
+      <h4>6. Privacidad y datos personales</h4>
+      <p>El tratamiento de tus datos —incluidos los <strong style="color:var(--pink)">datos sensibles de salud</strong> (ciclo y piel)— se rige por nuestra <a onclick="closeModal('modal-terms');openModal('modal-privacy')">Política de Privacidad</a>, conforme a la Ley de Protección de Datos Personales N° 25.326 y, para usuarias de la UE, al RGPD. Para prestar el servicio y sincronizar tu información entre dispositivos utilizamos a <strong>Google (Firebase / Firestore)</strong> como encargado del tratamiento, lo que puede implicar una transferencia internacional de datos. <strong>No vendemos tus datos ni los cedemos a terceros con fines comerciales o publicitarios.</strong> Podés ejercer tus derechos de acceso, rectificación, supresión, portabilidad y oposición según se explica en la Política de Privacidad.</p>
+      <h4>7. Disponibilidad y limitación de responsabilidad</h4>
+      <p>Luna se ofrece «tal como está» y según disponibilidad. No garantizamos que el servicio sea ininterrumpido o esté libre de errores, ni que la información sincronizada no pueda perderse por fallas técnicas; por eso te recomendamos exportar tus datos periódicamente. En la máxima medida permitida por la ley, KoreanPampa no será responsable por daños indirectos derivados del uso de la app o de decisiones tomadas a partir de sus consejos cosméticos. Ninguna disposición de estos Términos limita la responsabilidad que no pueda excluirse legalmente ni los derechos de las consumidoras.</p>
+      <h4>8. Propiedad intelectual</h4>
       <p>El diseño, contenido, textos y código de Luna son propiedad intelectual de KoreanPampa. Queda prohibida su reproducción, distribución o uso comercial sin autorización expresa.</p>
-      <h4>8. Jurisdicción</h4>
-      <p>Estos Términos se rigen por la legislación argentina. Ante cualquier controversia, serán competentes los tribunales ordinarios de la ciudad de General Acha, Provincia de La Pampa, Argentina.</p>
-      <p style="margin-top:12px;font-size:11px;color:var(--cream-dim)">Versión 2.0 · Junio 2026 · Luna App — KoreanPampa, General Acha, La Pampa, Argentina</p>
+      <h4>9. Modificaciones de estos Términos</h4>
+      <p>Podemos actualizar estos Términos. Si lo hacemos, te lo notificaremos dentro de la app antes de que entren en vigencia. El uso continuado luego de la notificación implica la aceptación de la versión vigente.</p>
+      <h4>10. Ley aplicable y jurisdicción</h4>
+      <p>Estos Términos se rigen por la legislación argentina. En las relaciones de consumo será competente, a elección de la consumidora, el tribunal de su domicilio, conforme a la Ley 24.240 y al Código Civil y Comercial de la Nación; ninguna cláusula restringe ese derecho. Para los demás casos serán competentes los tribunales ordinarios de la ciudad de General Acha, Provincia de La Pampa, Argentina.</p>
+      <h4>11. Disposiciones generales</h4>
+      <p>Si alguna cláusula de estos Términos fuera declarada inválida, las restantes mantendrán su plena vigencia. Estos Términos, junto con la Política de Privacidad y el Aviso Médico, constituyen el acuerdo completo entre vos y KoreanPampa respecto del uso de Luna.</p>
+      <p style="margin-top:12px;font-size:11px;color:var(--cream-dim)">Versión 3.1 · Junio 2026 · Luna App — KoreanPampa, General Acha, La Pampa, Argentina</p>
     </div>
     <button class="btn btn-ghost btn-full" style="margin-top:16px" onclick="closeModal('modal-terms')">Entendido</button>
   </div>
@@ -828,6 +863,7 @@ const FIREBASE_CONFIG = {
 
 var db = null;
 var firebaseReady = false;
+var authUid = null;        // uid de la sesión anónima (lo da Firebase Auth)
 var syncQueue = [];
 
 // Inicializar Firebase de forma asíncrona
@@ -836,6 +872,25 @@ async function initFirebase() {
     // Usar Firebase compat SDK (cargado en el head)
     firebase.initializeApp(FIREBASE_CONFIG);
     db = firebase.firestore();
+
+    // ── Autenticación anónima (best-effort) ──
+    // Si todavía no está habilitada en la consola, la app sigue funcionando
+    // igual que hasta ahora. Cuando se habilite, cada dispositivo recibe un uid.
+    try {
+      if (firebase.auth) {
+        await firebase.auth().signInAnonymously();
+        await new Promise(function (resolve) {
+          var off = firebase.auth().onAuthStateChanged(function (u) {
+            if (u) { off(); resolve(); }
+          });
+          setTimeout(resolve, 4000); // no quedarse esperando para siempre
+        });
+        if (firebase.auth().currentUser) authUid = firebase.auth().currentUser.uid;
+      }
+    } catch (eAuth) {
+      console.log('Auth anónima aún no disponible — sigo sin ella');
+    }
+
     firebaseReady = true;
 
     // Procesar cola pendiente
@@ -844,17 +899,37 @@ async function initFirebase() {
     }
     syncQueue = [];
 
-    // Cargar codigos desde Firestore
+    // Cargar codigos desde Firestore (sin cambios; falla en silencio si no hay permiso)
     await cargarCodesDesdeFirestore();
+
     // Sincronizar datos del usuario si ya tiene código
     var myCode = LS.get('myCode');
     if (myCode) {
+      // Revincular (backfill) este dispositivo al código. Best-effort.
+      await claimCodeClient(myCode);
       await loadFromCloud(myCode);
     }
 
     console.log('Firebase listo');
   } catch(e) {
     console.log('Firebase no disponible — modo offline');
+  }
+}
+
+// Vincula este dispositivo al código agregando su uid a authUids.
+// Sirve tanto para crear el documento (usuaria nueva) como para unirse
+// desde otro teléfono con el mismo código. Best-effort: si falla, no rompe.
+async function claimCodeClient(code) {
+  if (!db || !authUid || !code) return false;
+  try {
+    await db.collection('usuarios').doc(code).set(
+      { authUids: firebase.firestore.FieldValue.arrayUnion(authUid) },
+      { merge: true }
+    );
+    return true;
+  } catch (e) {
+    console.log('No se pudo vincular el código:', e && e.code);
+    return false;
   }
 }
 
@@ -908,7 +983,11 @@ const LS = {
       localStorage.setItem('lv3_'+k, JSON.stringify(v));
       // Sincronizar con Firebase si corresponde
       if (SYNC_KEYS.indexOf(k) >= 0) {
-        var userId = this.get('myCode') || this.get('isAdmin') ? 'admin' : null;
+        // PRIVACIDAD: cada usuaria escribe en SU propio documento (su código).
+        // Antes, por precedencia de operadores, toda usuaria con código escribía
+        // en el documento 'admin' compartido, mezclando datos de salud entre
+        // personas. Ahora se respeta la segregación por usuaria.
+        var userId = this.get('myCode') || (this.get('isAdmin') ? 'admin' : null);
         if (userId) {
           if (firebaseReady) {
             syncToCloud(userId, k, v);
@@ -1385,8 +1464,11 @@ async function checkCode() {
   var errEl = document.getElementById('codeError');
   if (codes[val] && codes[val].active !== false) {
     LS.set('myCode', val);
-    // Cargar datos de la nube para esta usuaria
-    if (firebaseReady) { loadFromCloud(val); }
+    // Vincular este dispositivo al código y cargar la nube.
+    if (firebaseReady) {
+      await claimCodeClient(val);
+      await loadFromCloud(val);
+    }
     var accepted = LS.get('termsAccepted');
     if (errEl) errEl.style.display = 'none';
     if (!accepted) { showScreen('onboarding'); }
@@ -3271,9 +3353,36 @@ function calcularCicloStats() {
   prox.setDate(prox.getDate() + promCiclo);
   var diasHasta = Math.round((prox - hoy) / 86400000);
 
+  // Duración REAL del período: promedio del historial (fin registrado).
+  // Si todavía no hay datos propios, usamos 5 como suposición suave.
+  var perDurs = [];
+  for (var pi = 0; pi < hist.length; pi++) {
+    if (hist[pi].end) {
+      var pdi = new Date(hist[pi].start);
+      var pdf = new Date(hist[pi].end);
+      var pdd = Math.round((pdf - pdi) / 86400000) + 1;
+      if (pdd > 0 && pdd < 15) perDurs.push(pdd);
+    }
+  }
+  var promPeriodo = perDurs.length
+    ? Math.round(perDurs.reduce(function(a,b){return a+b;},0) / perDurs.length)
+    : 5;
+  var periodoEstimado = perDurs.length === 0;
+
+  // ¿Está menstruando AHORA? Prioriza el fin real del ciclo actual;
+  // si no lo marcó, usa su duración promedio real (no un valor fijo).
+  var enPeriodo;
+  if (ciclo && ciclo.end) {
+    var endActual = new Date(ciclo.end); endActual.setHours(0,0,0,0);
+    enPeriodo = (hoy <= endActual) && !(diasHasta < 0);
+  } else {
+    enPeriodo = (diaActual <= promPeriodo) && !(diasHasta < 0);
+  }
+
   return {
     diaActual: diaActual, fase: fase, promCiclo: promCiclo,
     diasHasta: diasHasta, prox: prox, estimado: estimado,
+    promPeriodo: promPeriodo, periodoEstimado: periodoEstimado, enPeriodo: enPeriodo,
     atrasada: diasHasta < 0,
     // Atraso muy grande: probablemente dejó de registrar; pedimos actualizar
     desactualizado: diaActual > (promCiclo + 21)
@@ -3310,6 +3419,11 @@ function renderCicloHome() {
     sub = s.estimado
       ? 'Es solo una estimación hasta que registres más ciclos. Los atrasos son normales y pueden deberse a muchas cosas 💜'
       : 'Puede pasar y casi siempre es normal. Si te preocupa, registralo cuando llegue 💜';
+  } else if (s.enPeriodo) {
+    // Durante el período NO mostramos la cuenta regresiva al próximo:
+    // acompañamos el momento presente. La ventana usa la duración real.
+    head = (s.diaActual === 1) ? 'Estás en tu período 🩸' : ('Día ' + s.diaActual + ' de tu período 🩸');
+    sub = 'Tu piel está más sensible hoy: priorizá calma e hidratación. Cuidate 💜';
   } else if (s.diasHasta === 0) {
     head = 'Tu período podría llegar hoy 🩸';
     sub = 'Tené a mano lo que necesites. Hoy tu piel pide calma e hidratación.';
@@ -3344,7 +3458,9 @@ function renderCicloHome() {
     html += '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,var(--purple),var(--pink))"></div></div>';
     html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--cream-dim);letter-spacing:.5px">';
     html += '<span>Día ' + s.diaActual + '</span>';
-    if (!s.atrasada) html += '<span>Próximo: ' + s.prox.getDate() + ' ' + meses[s.prox.getMonth()].slice(0,3) + (s.estimado ? ' (est.)' : '') + '</span>';
+    var enPeriodo = s.enPeriodo;
+    if (!s.atrasada && !enPeriodo) html += '<span>Próximo: ' + s.prox.getDate() + ' ' + meses[s.prox.getMonth()].slice(0,3) + (s.estimado ? ' (est.)' : '') + '</span>';
+    else if (enPeriodo) html += '<span style="color:var(--pink)">🩸 En tu período</span>';
     html += '</div>';
   } else {
     html += '<div style="font-size:12px;color:var(--purple-light)">Actualizar mi ciclo →</div>';
