@@ -465,15 +465,13 @@ select.input-field{appearance:none}
   <div class="scroll-inner">
     <div class="section-header"><div class="section-header-title">🌸 Mi ciclo</div></div>
     <div style="margin:0 16px 12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px">
-      <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
-        <div>
-          <div style="font-size:13px;font-weight:500;color:var(--cream)">Mi ciclo es irregular</div>
-          <div style="font-size:11px;color:var(--cream-dim);margin-top:2px">Luna te dará consejos generales sin depender de fases estimadas</div>
-        </div>
-        <div id="toggle-irregular" onclick="toggleCicloIrregular()" style="width:44px;height:24px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0">
-          <div id="toggle-irregular-ball" style="width:20px;height:20px;border-radius:50%;background:var(--cream-dim);position:absolute;top:1px;left:2px;transition:left .2s"></div>
-        </div>
-      </label>
+      <div style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:10px">¿Cómo está tu ciclo hoy?</div>
+      <div style="display:flex;gap:6px">
+        <div id="etapa-opt-regular" onclick="setEtapaCiclo('regular')" style="flex:1;text-align:center;padding:9px 4px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--cream-dim);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s">Regular</div>
+        <div id="etapa-opt-irregular" onclick="setEtapaCiclo('irregular')" style="flex:1;text-align:center;padding:9px 4px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--cream-dim);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s">Variable</div>
+        <div id="etapa-opt-menopausia" onclick="setEtapaCiclo('menopausia')" style="flex:1;text-align:center;padding:9px 4px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--cream-dim);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s">Nueva etapa</div>
+      </div>
+      <div id="etapa-desc" style="font-size:11px;color:var(--cream-dim);margin-top:10px;line-height:1.5">Elegí cómo viene tu ciclo y Luna adapta lo que te muestra 🌸</div>
     </div>
     <div id="ciclo-phase-hero" class="phase-hero" style="display:none">
       <div class="phase-emoji" id="ciclo-phase-emoji">🌑</div>
@@ -953,7 +951,7 @@ async function loadFromCloud(userId) {
       var data = snap.data();
       var keys = ['profile', 'skinResult', 'ciclo', 'cicloHistorial', 'checkins',
                   'checkinDates', 'diario', 'escudos', 'mejorRacha', 'cicloIrregular',
-                  'notifConfig', 'logrosVistos'];
+                  'notifConfig', 'logrosVistos', 'etapaCiclo'];
       for (var i = 0; i < keys.length; i++) {
         var k = keys[i];
         if (data[k] !== undefined) {
@@ -971,7 +969,7 @@ async function loadFromCloud(userId) {
 // Claves que se sincronizan automáticamente
 var SYNC_KEYS = ['profile', 'skinResult', 'ciclo', 'cicloHistorial',
                  'checkins', 'checkinDates', 'diario', 'escudos',
-                 'mejorRacha', 'cicloIrregular', 'logrosVistos'];
+                 'mejorRacha', 'cicloIrregular', 'logrosVistos', 'etapaCiclo'];
 
 // Wrapper LS mejorado con sincronización
 const LS = {
@@ -1047,10 +1045,11 @@ const SKIN_WHY = {
 };
 
 const AGE_NOTES = {
-  teen:  '💜 En la adolescencia las hormonas están a full — normal que la piel sea más grasa o tenga acné. Lo más importante es no sobrecargarla con muchos productos.',
-  '20s': '✨ Los 20 son el momento ideal para crear hábitos. Tu piel se regenera rápido — aprovechá para establecer una buena rutina básica.',
-  '30s': '🌸 En los 30 el colágeno empieza a bajar lentamente. Es buen momento para sumar antioxidantes (vitamina C) y pensarlo en modo prevención.',
-  '40s': '🌙 En los 40 la piel necesita más nutrición y activos que estimulen la renovación. Hidratación intensa, retinol y SPF son tus aliados.'
+  teen:  '💜 A esta edad las hormonas están a pleno, así que es normal que la piel esté más grasa o con algún granito. La clave es simple: limpieza suave, hidratación y protector solar. No hace falta sobrecargarla.',
+  '20s': '✨ Es el mejor momento para armar hábitos que te acompañen toda la vida. Tu piel se regenera rápido, así que con una rutina básica y constante ya estás haciendo muchísimo.',
+  '30s': '🌸 El colágeno empieza a bajar de a poco, y es buen momento para sumar antioxidantes como la vitamina C. Pensalo como cuidado a futuro, sin apuro.',
+  '40s': '🌙 Tu piel pide un poco más de nutrición y activos que la ayuden a renovarse. Hidratación intensa, un retinoide si lo tolerás y protector solar todos los días son tus mejores aliados.',
+  '50s': '🌙 En esta etapa tu piel pide nutrición profunda y firmeza. Ceramidas, péptidos y, si te sienta bien, un retinoide suave. Y el protector solar, siempre — es lo que la mantiene pareja y luminosa. Cuidá la piel que tenés hoy.'
 };
 
 // ─── RUTINAS ────────────────────────────────────
@@ -1170,7 +1169,8 @@ const QUIZ_QUESTIONS = [
       {val:'teen',label:'Adolescente (hasta los 19)'},
       {val:'20s',label:'Entre 20 y 29'},
       {val:'30s',label:'Entre 30 y 39'},
-      {val:'40s',label:'40 o más'}
+      {val:'40s',label:'Entre 40 y 49'},
+      {val:'50s',label:'50 o más'}
     ]
   },
   {
@@ -1755,7 +1755,8 @@ function computeQuizResult() {
     if (savedAge < 20) finalAge = 'teen';
     else if (savedAge < 30) finalAge = '20s';
     else if (savedAge < 40) finalAge = '30s';
-    else finalAge = '40s';
+    else if (savedAge < 50) finalAge = '40s';
+    else finalAge = '50s';
   }
 
   // ─── GUARDAR RESULTADO ENRIQUECIDO ───
@@ -2289,36 +2290,48 @@ function showRoutine(time) {
   }).join('');
 }
 // ─── CICLO ───────────────────────────────────────
-function toggleCicloIrregular() {
-  var actual = LS.get('cicloIrregular') || false;
-  var nuevo = !actual;
-  LS.set('cicloIrregular', nuevo);
-  aplicarEstadoIrregular(nuevo);
-  showToast(nuevo ? 'Modo ciclo irregular activado 🌙' : 'Modo ciclo regular activado 🌸');
+function setEtapaCiclo(val) {
+  LS.set('etapaCiclo', val);
+  LS.set('cicloIrregular', val !== 'regular'); // espejo para el resto del código
+  aplicarEtapaCiclo(val);
+  if (typeof renderCicloHome === 'function') renderCicloHome();
+  var msg = val === 'menopausia' ? 'Luna se adapta a tu nueva etapa 🌙'
+          : val === 'irregular'  ? 'Modo ciclo variable activado 🌙'
+          : 'Modo ciclo regular activado 🌸';
+  showToast(msg);
 }
 
-function aplicarEstadoIrregular(irregular) {
-  var toggle = document.getElementById('toggle-irregular');
-  var ball = document.getElementById('toggle-irregular-ball');
+function aplicarEtapaCiclo(etapa) {
+  if (!etapa) etapa = getEtapaManual() || 'regular';
+  var noRegular = (etapa !== 'regular');
+  var descs = {
+    regular:    'Regular — tus ciclos son más o menos previsibles.',
+    irregular:  'Variable — tus ciclos cambiaron y cuesta predecirlos.',
+    menopausia: 'Nueva etapa — ya casi no tenés período o se detuvo. Luna cuida tu piel sin contar días.'
+  };
+  ['regular','irregular','menopausia'].forEach(function(op){
+    var el = document.getElementById('etapa-opt-' + op);
+    if (el) {
+      var on = (op === etapa);
+      el.style.background = on ? 'var(--purple)' : 'var(--surface2)';
+      el.style.color = on ? '#fff' : 'var(--cream-dim)';
+      el.style.borderColor = on ? 'var(--purple)' : 'var(--border)';
+    }
+  });
+  var descEl = document.getElementById('etapa-desc');
+  if (descEl) descEl.textContent = descs[etapa] || descs.regular;
   var hero = document.getElementById('ciclo-phase-hero');
   var cardIrreg = document.getElementById('ciclo-irregular-card');
-
-  if (toggle) toggle.style.background = irregular ? 'var(--purple)' : 'var(--surface2)';
-  if (ball) ball.style.left = irregular ? '22px' : '2px';
-  if (ball) ball.style.background = irregular ? '#fff' : 'var(--cream-dim)';
-  if (hero) hero.style.display = irregular ? 'none' : '';
-  if (cardIrreg) cardIrreg.style.display = irregular ? '' : 'none';
-
-  // También ocultar/mostrar en Home el streak-phase
+  if (hero) hero.style.display = noRegular ? 'none' : '';
+  if (cardIrreg) cardIrreg.style.display = noRegular ? '' : 'none';
   var phaseEl = document.getElementById('streak-phase');
-  if (phaseEl && irregular) phaseEl.textContent = '🌀';
+  if (phaseEl && noRegular) phaseEl.textContent = '🌀';
 }
 
 function renderCiclo() {
   renderCicloHistorial();
-  // Aplicar estado irregular al cargar
-  var irregular = LS.get('cicloIrregular') || false;
-  aplicarEstadoIrregular(irregular);
+  // Aplicar la etapa elegida al cargar (regular / variable / nueva etapa)
+  aplicarEtapaCiclo();
   const ciclo = LS.get('ciclo') || {};
   const hormProf = LS.get('hormProfile') || {};
   if (ciclo.start) {
@@ -3389,6 +3402,83 @@ function calcularCicloStats() {
   };
 }
 
+// ═══ ETAPA VITAL (40+/50+): adapta la experiencia a ciclos variables o nueva etapa ═══
+
+// Etapa elegida a mano por la usuaria (con migración del toggle anterior).
+function getEtapaManual() {
+  var m = LS.get('etapaCiclo');
+  if (m === 'regular' || m === 'irregular' || m === 'menopausia') return m;
+  if (LS.get('cicloIrregular')) return 'irregular'; // usuarias del toggle viejo
+  return null;
+}
+
+function diasDesdeUltimoPeriodo() {
+  var DIA = 86400000, ciclo = LS.get('ciclo');
+  var hist = (LS.get('cicloHistorial') || []).slice().sort(function(a,b){return new Date(a.start)-new Date(b.start);});
+  var ult = (ciclo && ciclo.start) ? ciclo.start : (hist.length ? hist[hist.length-1].start : null);
+  if (!ult) return null;
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var u = new Date(ult); u.setHours(0,0,0,0);
+  return Math.floor((hoy - u) / DIA);
+}
+
+// Decide la etapa. La elección manual SIEMPRE manda; si no eligió, auto-detecta.
+function detectarEtapaVital() {
+  var DIA = 86400000;
+  var manual = getEtapaManual();
+  if (manual === 'menopausia') return { etapa:'menopausia', manual:true, auto:false, diasDesde:diasDesdeUltimoPeriodo(), sd:0 };
+  if (manual === 'irregular')  return { etapa:'irregular',  manual:true, auto:false, diasDesde:diasDesdeUltimoPeriodo(), sd:0 };
+
+  var hist = (LS.get('cicloHistorial') || []).slice().sort(function(a,b){return new Date(a.start)-new Date(b.start);});
+  var diasDesde = diasDesdeUltimoPeriodo();
+  var largos = [];
+  for (var i = 1; i < hist.length; i++) {
+    var d = Math.round((new Date(hist[i].start) - new Date(hist[i-1].start)) / DIA);
+    if (d >= 15 && d <= 90) largos.push(d);
+  }
+  var recientes = largos.slice(-6), sd = 0;
+  if (recientes.length >= 3) {
+    var mm = recientes.reduce(function(a,b){return a+b;},0) / recientes.length;
+    var v = recientes.reduce(function(a,b){return a+(b-mm)*(b-mm);},0) / recientes.length;
+    sd = Math.sqrt(v);
+  }
+  var forzarRegular = (manual === 'regular');
+  var autoIrregular =
+    (!forzarRegular && recientes.length >= 3 && sd >= 7) || // variación persistente (criterio STRAW)
+    (diasDesde != null && diasDesde >= 60);                  // gap largo entre períodos
+  return { etapa: autoIrregular ? 'irregular' : 'regular', manual:false, auto:autoIrregular,
+           diasDesde:diasDesde, sd:Math.round(sd*10)/10 };
+}
+
+// Card de home: NUEVA ETAPA (sin fases, sin cuenta regresiva, sin "atraso").
+function renderHomeMenopausia(cont, det) {
+  var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
+  html += '<div class="card-label">🌙 TU PIEL HOY</div>';
+  html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:2px">Tu piel está en un momento nuevo 🌙</div>';
+  html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5;margin-bottom:10px">Luna te acompaña cuidándola día a día, sin contar fases del ciclo.</div>';
+  html += '<div style="padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--purple-light);line-height:1.6">';
+  html += '💧 Hoy tu piel pide nutrición y barrera fuerte. Ceramidas, ácido hialurónico y péptidos para firmeza. Y el protector solar, todos los días — es lo que la mantiene pareja y luminosa.';
+  html += '</div></div>';
+  cont.innerHTML = html;
+}
+
+// Card de home: VARIABLE (ciclo irregular, sin alarmar).
+function renderHomeIrregular(cont, det) {
+  var nota = '';
+  if (det.auto) {
+    nota = '<div style="margin-top:10px;font-size:12px;color:var(--purple-light);line-height:1.5">' +
+           'Tus ciclos vienen variando últimamente. Si querés, marcá tu etapa en la sección Ciclo para que Luna se adapte del todo.</div>';
+  }
+  var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
+  html += '<div class="card-label">🌙 TU PIEL HOY</div>';
+  html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:2px">Tu ciclo tiene su propio ritmo 🌙</div>';
+  html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5;margin-bottom:10px">Luna te cuida la piel sin fijarse en el día exacto.</div>';
+  html += '<div style="padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--purple-light);line-height:1.6">';
+  html += '💧 Hidratación y barrera fuerte · ☀️ SPF todos los días · 🌿 activos calmantes (centella, niacinamida, ceramidas)';
+  html += '</div>' + nota + '</div>';
+  cont.innerHTML = html;
+}
+
 function renderCicloHome() {
   var cont = document.getElementById('ciclo-home');
   if (!cont) return;
@@ -3405,6 +3495,11 @@ function renderCicloHome() {
       '</div>';
     return;
   }
+
+  // 40+/50+: si el ciclo es variable o nueva etapa, no mostramos "atraso" ni cuenta regresiva.
+  var det = detectarEtapaVital();
+  if (det.etapa === 'menopausia') { renderHomeMenopausia(cont, det); return; }
+  if (det.etapa === 'irregular')  { renderHomeIrregular(cont, det);  return; }
 
   var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
