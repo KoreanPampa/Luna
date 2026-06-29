@@ -479,19 +479,39 @@ select.input-field{appearance:none}
       <div class="phase-day" id="ciclo-phase-day">Día X del ciclo</div>
       <div class="phase-desc" id="ciclo-phase-desc"></div>
     </div>
-    <div class="card">
+    <div class="card" id="ciclo-registro-card">
       <div class="card-label">📅 REGISTRO DE PERÍODO</div>
       <div class="form-group"><div class="input-label">Inicio del período</div><input type="date" class="input-field" id="ciclo-start"></div>
       <div class="form-group"><div class="input-label">Fin del período (si ya terminó)</div><input type="date" class="input-field" id="ciclo-end"></div>
       <button class="btn btn-primary btn-full" style="margin-top:4px" onclick="saveCiclo()">Guardar ciclo 🌸</button>
       <button class="btn btn-full" id="btn-menstruando" style="margin-top:8px;background:linear-gradient(135deg,rgba(212,80,80,.18),rgba(212,120,154,.18));border:1px solid rgba(212,120,154,.4);color:var(--cream)" onclick="iniciarMenstruacion()">🩸 Estoy menstruando hoy</button>
     </div>
+    <div id="ciclo-registro-toggle" style="display:none;margin:0 16px 12px">
+      <button class="btn btn-full" style="background:var(--surface2);border:1px solid var(--border);color:var(--cream-dim);font-size:13px" onclick="mostrarRegistroPeriodo()">➕ Registrar un período igual (opcional)</button>
+    </div>
+    <div id="ciclo-menopausia-card" style="display:none;margin:0 16px 12px">
+      <div style="background:linear-gradient(135deg,rgba(155,127,212,.12),rgba(201,168,76,.08));border:1px solid rgba(155,127,212,.25);border-radius:20px;padding:18px">
+        <div style="font-size:11px;color:var(--purple-light);font-weight:600;letter-spacing:1.5px;margin-bottom:10px">🌙 TU PIEL EN ESTA ETAPA</div>
+        <div style="font-size:13px;color:var(--cream);line-height:1.6;margin-bottom:14px">Tu cuerpo entró en un momento nuevo, y tu piel también. Luna te acompaña cuidándola, sin contar días. Esto es lo que más le sirve ahora:</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:16px">💧</span><div style="font-size:12px;color:var(--cream-dim);line-height:1.5"><strong style="color:var(--cream)">Nutrir e hidratar a fondo</strong> — tu piel retiene menos agua que antes. Ceramidas, ácido hialurónico y escualano la ayudan a sentirse cómoda y a verse descansada.</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:16px">🌿</span><div style="font-size:12px;color:var(--cream-dim);line-height:1.5"><strong style="color:var(--cream)">Acompañar la firmeza</strong> — sumá péptidos y, si tu piel lo tolera, un retinoide suave de noche. De a poco, sin apurarte.</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:16px">✨</span><div style="font-size:12px;color:var(--cream-dim);line-height:1.5"><strong style="color:var(--cream)">Devolver luz y emparejar el tono</strong> — vitamina C a la mañana y niacinamida para unificar. Una exfoliación suave cada tanto ayuda, sin pasarte.</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:16px">☀️</span><div style="font-size:12px;color:var(--cream-dim);line-height:1.5"><strong style="color:var(--cream)">Proteger, siempre</strong> — el protector solar es tu mejor aliado todos los días, con sol o sin sol. Es lo que mantiene el tono parejo.</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:16px">🤍</span><div style="font-size:12px;color:var(--cream-dim);line-height:1.5"><strong style="color:var(--cream)">Calmar cuando lo pide</strong> — si la sentís más sensible, bajá un cambio: centella, avena, ingredientes simples. Menos es más.</div></div>
+        </div>
+        <details style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <summary style="cursor:pointer;font-size:12px;color:var(--purple-light);font-weight:600">¿Por qué cambia mi piel en esta etapa? 🌙</summary>
+          <div style="font-size:12px;color:var(--cream-dim);line-height:1.6;margin-top:10px">Con los años baja el estrógeno, y eso hace que la piel produzca menos colágeno y se reseque más fácil. Por eso puede sentirse más fina, menos firme o más apagada — es un proceso natural, no algo que esté mal. La buena noticia: con nutrición, barrera fuerte y protección solar constante, tu piel sigue luciendo sana y cuidada.<br><br><em>Luna te acompaña con sugerencias de cuidado de la piel; no reemplaza la consulta con un profesional de la salud.</em></div>
+        </details>
+      </div>
+    </div>
     <div class="card" id="ciclo-sintomas-card" style="display:none">
-      <div class="card-label">🩸 ¿CÓMO TE SENTÍS HOY?</div>
+      <div class="card-label" id="sym-card-label">🩸 ¿CÓMO TE SENTÍS HOY?</div>
       <div class="sym-intro">Marcá lo que sentís. Se guarda en tu historial y Luna te sugiere cómo cuidarte 🌸</div>
-      <div class="sym-group-label good">✨ Lo bueno del ciclo</div>
+      <div class="sym-group-label good">✨ Lo bueno</div>
       <div class="symptoms-grid" id="symptoms-grid-good"></div>
-      <div class="sym-group-label bad">💜 Molestias</div>
+      <div class="sym-group-label bad" id="sym-bad-label">💜 Molestias</div>
       <div class="symptoms-grid" id="symptoms-grid-bad"></div>
       <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="saveHormProfile()">Guardar síntomas ✨</button>
     </div>
@@ -1147,6 +1167,12 @@ const SYMPTOMS_BAD = [
   {emoji:'🩸',text:'Sangrado abundante'},{emoji:'🔻',text:'Dolor lumbar'},{emoji:'🦵',text:'Dolor de piernas'},{emoji:'🤕',text:'Migraña'},
   {emoji:'😞',text:'Tristeza'},{emoji:'😰',text:'Ansiedad'},{emoji:'🍽️',text:'Más apetito'},{emoji:'🚽',text:'Diarrea'},
   {emoji:'🪨',text:'Constipación'},{emoji:'🎈',text:'Pechos sensibles'},{emoji:'😖',text:'Calambres'},{emoji:'🥴',text:'Mareos'}
+];
+const SYMPTOMS_MENO = [
+  {emoji:'🌡️',text:'Sofocos'},{emoji:'💤',text:'Sueño interrumpido'},{emoji:'🏜️',text:'Piel seca'},
+  {emoji:'😣',text:'Sensibilidad'},{emoji:'🌫️',text:'Niebla mental'},{emoji:'😢',text:'Cambios de ánimo'},
+  {emoji:'⚡',text:'Cansancio'},{emoji:'💜',text:'Irritabilidad'},{emoji:'🌙',text:'Insomnio'},
+  {emoji:'💧',text:'Sequedad'},{emoji:'😵',text:'Dolores cabeza'},{emoji:'🦴',text:'Dolor articular'}
 ];
 const SYMPTOMS_LIST = [...SYMPTOMS_GOOD, ...SYMPTOMS_BAD];
 
@@ -2304,6 +2330,9 @@ function setEtapaCiclo(val) {
 function aplicarEtapaCiclo(etapa) {
   if (!etapa) etapa = getEtapaManual() || 'regular';
   var noRegular = (etapa !== 'regular');
+  var esMeno = (etapa === 'menopausia');
+
+  // Descripción y resaltado del selector
   var descs = {
     regular:    'Regular — tus ciclos son más o menos previsibles.',
     irregular:  'Variable — tus ciclos cambiaron y cuesta predecirlos.',
@@ -2320,12 +2349,47 @@ function aplicarEtapaCiclo(etapa) {
   });
   var descEl = document.getElementById('etapa-desc');
   if (descEl) descEl.textContent = descs[etapa] || descs.regular;
+
+  // Cartel de fase: solo en Regular (en Variable/Nueva etapa no mostramos "atraso")
   var hero = document.getElementById('ciclo-phase-hero');
-  var cardIrreg = document.getElementById('ciclo-irregular-card');
   if (hero) hero.style.display = noRegular ? 'none' : '';
-  if (cardIrreg) cardIrreg.style.display = noRegular ? '' : 'none';
+
+  // Cards de cuidado según la etapa
+  var cardIrreg = document.getElementById('ciclo-irregular-card');
+  var cardMeno = document.getElementById('ciclo-menopausia-card');
+  if (cardIrreg) cardIrreg.style.display = (etapa === 'irregular') ? '' : 'none';
+  if (cardMeno)  cardMeno.style.display  = esMeno ? '' : 'none';
+
+  // Registro de período: en Nueva etapa se pliega tras un botón opcional
+  var regCard = document.getElementById('ciclo-registro-card');
+  var regToggle = document.getElementById('ciclo-registro-toggle');
+  if (regCard)   regCard.style.display = esMeno ? 'none' : '';
+  if (regToggle) regToggle.style.display = esMeno ? '' : 'none';
+
+  // Síntomas: en Nueva etapa la grilla cambia y la card queda siempre disponible
+  var symCard = document.getElementById('ciclo-sintomas-card');
+  if (symCard) {
+    if (esMeno) symCard.style.display = '';
+    else {
+      var cic = LS.get('ciclo') || {};
+      var h = new Date();
+      var isoH = h.getFullYear() + '-' + String(h.getMonth()+1).padStart(2,'0') + '-' + String(h.getDate()).padStart(2,'0');
+      symCard.style.display = (cic.start === isoH) ? '' : 'none';
+    }
+  }
+  if (typeof renderSymptoms === 'function') renderSymptoms();
+
+  // Ícono de racha en Inicio
   var phaseEl = document.getElementById('streak-phase');
   if (phaseEl && noRegular) phaseEl.textContent = '🌀';
+}
+
+// Despliega el registro de período cuando la usuaria de "Nueva etapa" quiere cargar uno.
+function mostrarRegistroPeriodo() {
+  var regCard = document.getElementById('ciclo-registro-card');
+  var regToggle = document.getElementById('ciclo-registro-toggle');
+  if (regCard) regCard.style.display = '';
+  if (regToggle) regToggle.style.display = 'none';
 }
 
 function renderCiclo() {
@@ -2609,12 +2673,20 @@ function renderBienestar(phase) {
 
 function renderSymptoms() {
   const saved = (LS.get('hormProfile') || {}).symptoms || [];
+  const etapa = (typeof getEtapaManual === 'function') ? getEtapaManual() : null;
+  const esMeno = etapa === 'menopausia';
+  const listaBad = esMeno ? SYMPTOMS_MENO : SYMPTOMS_BAD;
   const buildBtn = (s, extra) =>
     `<button class="symptom-btn${extra}${saved.includes(s.text)?' active':''}" data-sym="${s.text}" onclick="toggleSymptom(this)">${s.emoji}<br>${s.text}</button>`;
   const gGood = document.getElementById('symptoms-grid-good');
   const gBad = document.getElementById('symptoms-grid-bad');
   if (gGood) gGood.innerHTML = SYMPTOMS_GOOD.map(s => buildBtn(s, ' good')).join('');
-  if (gBad) gBad.innerHTML = SYMPTOMS_BAD.map(s => buildBtn(s, '')).join('');
+  if (gBad) gBad.innerHTML = listaBad.map(s => buildBtn(s, '')).join('');
+  // Etiquetas adaptadas a la etapa
+  const lblCard = document.getElementById('sym-card-label');
+  const lblBad = document.getElementById('sym-bad-label');
+  if (lblCard) lblCard.textContent = esMeno ? '🌙 ¿CÓMO TE SENTÍS HOY?' : '🩸 ¿CÓMO TE SENTÍS HOY?';
+  if (lblBad) lblBad.textContent = esMeno ? '💜 En esta etapa' : '💜 Molestias';
 }
 
 function toggleSymptom(el) { el.classList.toggle('active'); }
@@ -3268,6 +3340,16 @@ function updateHomeGreeting() {
     ];
   }
 
+  // Nueva etapa: subtítulos centrados en cuidado, sin mencionar el ciclo
+  if ((typeof getEtapaManual === 'function') && getEtapaManual() === 'menopausia') {
+    subs = [
+      'Tu piel está en un momento nuevo — cuidémosla juntas 🌙',
+      'Nutrición y firmeza: lo que tu piel agradece hoy 💜',
+      'No te olvides del protector solar — es tu mejor aliado ☀️',
+      'Un mimo para tu piel hoy: hidratación profunda 💧'
+    ];
+  }
+
   var el = document.getElementById('home-greeting');
   if (el) el.textContent = saludo + (name ? ', ' + name : '') + ' 🌙';
 
@@ -3297,7 +3379,19 @@ function renderIngredienteDestacado() {
   if (!cont || typeof GLOSARIO === 'undefined' || !GLOSARIO.length) return;
   var now = new Date();
   var dayNum = Math.floor((now - new Date(now.getFullYear(),0,0)) / 86400000);
-  var ing = GLOSARIO[dayNum % GLOSARIO.length];
+  // 40+/50+ o Nueva etapa: priorizar ingredientes de nutrición y firmeza
+  var lista = GLOSARIO;
+  var etapa = (typeof getEtapaManual === 'function') ? getEtapaManual() : null;
+  var edad = (LS.get('skinResult') || {}).age;
+  var maduraSkin = (etapa === 'menopausia') || edad === '50s' || edad === '40s';
+  if (maduraSkin) {
+    var claves = ['Péptidos','Ceramidas','Retinol','Ácido hialurónico','Niacinamida','Vitamina C','SPF'];
+    var filtrada = GLOSARIO.filter(function(g){
+      return claves.some(function(k){ return g.name.indexOf(k) === 0; });
+    });
+    if (filtrada.length) lista = filtrada;
+  }
+  var ing = lista[dayNum % lista.length];
   var emoji = ING_EMOJI[ing.name] || '🔬';
   var resumen = (ing.body || '').slice(0,110).trim();
   cont.innerHTML =
@@ -3404,11 +3498,10 @@ function calcularCicloStats() {
 
 // ═══ ETAPA VITAL (40+/50+): adapta la experiencia a ciclos variables o nueva etapa ═══
 
-// Etapa elegida a mano por la usuaria (con migración del toggle anterior).
 function getEtapaManual() {
   var m = LS.get('etapaCiclo');
   if (m === 'regular' || m === 'irregular' || m === 'menopausia') return m;
-  if (LS.get('cicloIrregular')) return 'irregular'; // usuarias del toggle viejo
+  if (LS.get('cicloIrregular')) return 'irregular'; // migración del toggle anterior
   return null;
 }
 
@@ -3422,7 +3515,6 @@ function diasDesdeUltimoPeriodo() {
   return Math.floor((hoy - u) / DIA);
 }
 
-// Decide la etapa. La elección manual SIEMPRE manda; si no eligió, auto-detecta.
 function detectarEtapaVital() {
   var DIA = 86400000;
   var manual = getEtapaManual();
@@ -3450,7 +3542,6 @@ function detectarEtapaVital() {
            diasDesde:diasDesde, sd:Math.round(sd*10)/10 };
 }
 
-// Card de home: NUEVA ETAPA (sin fases, sin cuenta regresiva, sin "atraso").
 function renderHomeMenopausia(cont, det) {
   var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
   html += '<div class="card-label">🌙 TU PIEL HOY</div>';
@@ -3462,7 +3553,6 @@ function renderHomeMenopausia(cont, det) {
   cont.innerHTML = html;
 }
 
-// Card de home: VARIABLE (ciclo irregular, sin alarmar).
 function renderHomeIrregular(cont, det) {
   var nota = '';
   if (det.auto) {
@@ -4175,8 +4265,8 @@ function programarNotificaciones() {
       }
     }
 
-    // Aviso periodo proximo (9am)
-    if (cfg.periodo && horaActual === '09:00') {
+    // Aviso periodo proximo (9am) — no aplica en Nueva etapa
+    if (cfg.periodo && horaActual === '09:00' && (typeof getEtapaManual !== 'function' || getEtapaManual() !== 'menopausia')) {
       var hist = LS.get('cicloHistorial') || [];
       if (hist.length >= 2) {
         var duraciones = [];
@@ -4196,6 +4286,22 @@ function programarNotificaciones() {
             LS.set('ultimaNotifPeriodo', hoy2);
           }
         }
+      }
+    }
+    // Nueva etapa: recordatorio suave de rutina en lugar del aviso de período (9am, cada 3 días)
+    if (cfg.periodo && horaActual === '09:00' && (typeof getEtapaManual === 'function') && getEtapaManual() === 'menopausia') {
+      var hoyR = new Date();
+      var diaAnio = Math.floor((hoyR - new Date(hoyR.getFullYear(),0,0)) / 86400000);
+      var hoyStrR = hoyR.toDateString();
+      var ultimaRut = LS.get('ultimaNotifRutina');
+      if (diaAnio % 3 === 0 && ultimaRut !== hoyStrR) {
+        var msjsRutina = [
+          '¿Pusiste tu protector solar hoy? Es el paso que más cuida tu piel ☀️',
+          'Un recordatorio cariñoso: hidratá tu piel a fondo hoy 💧',
+          'Tu piel agradece la constancia. Nutrición y barrera fuerte hoy 🌙'
+        ];
+        enviarNotif('Tu piel hoy 🌙', msjsRutina[diaAnio % msjsRutina.length]);
+        LS.set('ultimaNotifRutina', hoyStrR);
       }
     }
   }, 60000);
