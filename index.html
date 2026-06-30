@@ -689,6 +689,13 @@ select.input-field{appearance:none}
         <button class="btn btn-primary" style="padding:11px 18px;font-size:13px" onclick="generateCode()">Generar</button>
       </div>
       <div class="section-title">Códigos creados</div>
+      <input class="input-field" id="codes-search" placeholder="🔍 Buscar por código o nombre" style="margin-bottom:8px" oninput="renderCodesList()">
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button id="cf-todos" onclick="setCodeFilter('todos')" style="flex:1;padding:7px;border-radius:9px;background:var(--purple);border:1px solid var(--purple);color:#fff;font-size:12px;font-weight:500;cursor:pointer">Todos</button>
+        <button id="cf-activos" onclick="setCodeFilter('activos')" style="flex:1;padding:7px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);color:var(--cream-dim);font-size:12px;font-weight:500;cursor:pointer">Activos</button>
+        <button id="cf-inactivos" onclick="setCodeFilter('inactivos')" style="flex:1;padding:7px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);color:var(--cream-dim);font-size:12px;font-weight:500;cursor:pointer">Inactivos</button>
+      </div>
+      <div id="codes-count" style="font-size:11px;color:var(--cream-dim);margin-bottom:8px"></div>
       <div id="codes-list"></div>
     </div>
     <div class="admin-tab" id="at-store">
@@ -2984,13 +2991,47 @@ async function generateCode() {
   }
 }
 
+var codeFilter = 'todos';
+function setCodeFilter(f) {
+  codeFilter = f;
+  ['todos','activos','inactivos'].forEach(function(x){
+    var b = document.getElementById('cf-' + x);
+    if (b) {
+      var on = (x === f);
+      b.style.background = on ? 'var(--purple)' : 'var(--surface2)';
+      b.style.color = on ? '#fff' : 'var(--cream-dim)';
+      b.style.borderColor = on ? 'var(--purple)' : 'var(--border)';
+    }
+  });
+  renderCodesList();
+}
+
 function renderCodesList() {
   var codes = LS.get('codes') || {};
   var list = document.getElementById('codes-list');
   if (!list) return;
   var entries = Object.entries(codes);
+  var total = entries.length;
+
+  // Filtro por búsqueda (código o nombre) y por estado
+  var q = ((document.getElementById('codes-search') || {}).value || '').trim().toLowerCase();
+  entries = entries.filter(function(entry){
+    var code = entry[0], data = entry[1] || {};
+    var activo = data.active !== false;
+    if (codeFilter === 'activos' && !activo) return false;
+    if (codeFilter === 'inactivos' && activo) return false;
+    if (q && (code + ' ' + (data.name || '')).toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+
+  var countEl = document.getElementById('codes-count');
+  if (countEl) countEl.textContent = (q || codeFilter !== 'todos')
+    ? 'Mostrando ' + entries.length + ' de ' + total
+    : total + (total === 1 ? ' código' : ' códigos');
+
   if (entries.length === 0) {
-    list.innerHTML = '<div style="text-align:center;color:var(--cream-dim);padding:20px;font-size:13px">Todavía no hay códigos creados</div>';
+    list.innerHTML = '<div style="text-align:center;color:var(--cream-dim);padding:20px;font-size:13px">' +
+      (total === 0 ? 'Todavía no hay códigos creados' : 'Ningún código coincide con la búsqueda') + '</div>';
     return;
   }
   list.innerHTML = entries.map(function(entry) {
