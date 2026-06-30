@@ -3288,8 +3288,10 @@ function confirmarCheckin() {
 function doCheckin(label, skinKey, lavado, spf) {
   var hoy = new Date().toDateString();
   var checkins = LS.get('checkins') || {};
+  var totalAntes = Object.keys(checkins).length;
   checkins[hoy] = { label: label, skin: skinKey, lavado: lavado, spf: spf, ts: new Date().toISOString() };
   LS.set('checkins', checkins);
+  var totalDespues = Object.keys(checkins).length;
   // Registrar fecha para racha
   var fechas = LS.get('checkinDates') || [];
   if (fechas.indexOf(hoy) === -1) { fechas.push(hoy); LS.set('checkinDates', fechas); }
@@ -3332,9 +3334,11 @@ function doCheckin(label, skinKey, lavado, spf) {
   renderLogros();
   renderRachaHome();
   renderSkinTrend();
-  // Celebración de hito si la racha cruza a una fase lunar nueva
-  if (typeof celebrarHito === 'function') {
-    setTimeout(function() { celebrarHito(rachaActualPost); }, 700);
+  // Celebración al completar una lunación (cruzás un múltiplo de 28 check-ins)
+  var lunasAntes = Math.floor(totalAntes / DIAS_POR_LUNA);
+  var lunasDespues = Math.floor(totalDespues / DIAS_POR_LUNA);
+  if (lunasDespues > lunasAntes && typeof celebrarLunacion === 'function') {
+    setTimeout(function() { celebrarLunacion(lunasDespues); }, 700);
   }
   showToast('Check-in guardado 🌸');
 }
@@ -3799,40 +3803,32 @@ function renderSkinTrend() {
 
 // ─── Celebración de hito de racha ────────────────────────────
 // Momento especial cuando la racha cruza a una fase lunar nueva.
-function celebrarHito(dias) {
-  var fase = (typeof getFaseLunar === 'function') ? getFaseLunar(dias) : null;
-  // Solo celebramos al CRUZAR el umbral de una fase (dias === fase.min)
-  var esUmbral = false;
-  if (typeof FASES_LUNARES !== 'undefined') {
-    for (var i = 0; i < FASES_LUNARES.length; i++) {
-      if (FASES_LUNARES[i].min === dias) { esUmbral = true; fase = FASES_LUNARES[i]; break; }
-    }
-  }
-  if (!esUmbral || !fase) return;
-  // Evitar repetir el mismo hito
-  if (LS.get('ultimoHitoCelebrado') === dias) return;
-  LS.set('ultimoHitoCelebrado', dias);
+// ─── Celebración al completar una lunación (luna llena) ──────
+// Se dispara cuando cruzás un múltiplo de 28 check-ins: tu luna
+// se llenó del todo y pasa a formar parte de tu cielo.
+function celebrarLunacion(numeroLuna) {
+  if (LS.get('ultimaLunaCelebrada') === numeroLuna) return;
+  LS.set('ultimaLunaCelebrada', numeroLuna);
 
   var overlay = document.createElement('div');
   overlay.className = 'hito-overlay';
   overlay.innerHTML =
     '<div class="hito-card">' +
-      '<div class="hito-emoji">' + fase.emoji + '</div>' +
-      '<div class="hito-title">' + fase.nombre + '</div>' +
-      '<div class="hito-sub">' + dias + (dias === 1 ? ' día seguido' : ' días seguidos') + ' 🌙<br>' + fase.msg + '</div>' +
+      '<div class="hito-emoji">🌕</div>' +
+      '<div class="hito-title">¡Luna llena!</div>' +
+      '<div class="hito-sub">Completaste tu luna número ' + numeroLuna + ' 🌙<br>Veintiocho días de cuidarte. Ya es parte de tu cielo.</div>' +
     '</div>';
   overlay.addEventListener('click', function() {
     overlay.style.opacity = '0';
     setTimeout(function() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 350);
   });
   document.body.appendChild(overlay);
-  // Cierre automático suave
   setTimeout(function() {
     if (overlay.parentNode) {
       overlay.style.opacity = '0';
       setTimeout(function() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 350);
     }
-  }, 3800);
+  }, 4200);
 }
 
 // ─── MEJORA 2: INSIGHT TEMPRANO (desde el 3er check-in) ───────
@@ -4172,10 +4168,9 @@ function cerrarResumenSemanal() {
 }
 
 function renderRachaHome() {
-  var racha = calcularRacha();
-  var checkins = LS.get('checkins') || {};
-  var total = Object.keys(checkins).length;
-  var fase = getFaseLunar(racha);
+  var est = getLunaEstado();
+  var racha = est.racha;
+  var total = est.total;
 
   // Actualizar displays del streak-row
   var dEl = document.getElementById('streak-days');
@@ -4183,9 +4178,9 @@ function renderRachaHome() {
   var pEl = document.getElementById('streak-phase');
   if (dEl) dEl.textContent = racha;
   if (tEl) tEl.textContent = total;
-  // Si el ciclo es irregular, mostrar icono especial
+  // Si el ciclo es irregular, mostrar icono especial; si no, la fase de la luna
   var esIrregular = LS.get('cicloIrregular') || false;
-  if (pEl) pEl.textContent = esIrregular ? '🌀' : (fase ? fase.emoji : '🌑');
+  if (pEl) pEl.textContent = esIrregular ? '🌀' : lunaEmoji(est);
 
   // El subtítulo del saludo lo maneja updateHomeGreeting() con su propio
   // mensaje según el momento del día. Ya no se pisa aquí para evitar el
@@ -4360,32 +4355,181 @@ function notificarLogroNuevo(logro) {
 // ══════════════════════════════════════════════════
 
 // Fases lunares por días de racha
-var FASES_LUNARES = [
-  { min:1,   max:2,   emoji:'🌑', nombre:'Luna nueva',      msg:'Bienvenida a tu viaje de autocuidado. Cada gran hábito empieza con un primer paso.' },
-  { min:3,   max:6,   emoji:'🌒', nombre:'Luna creciente',  msg:'Ya empezás a construir un hábito. Tu piel te agradece la atención.' },
-  { min:7,   max:13,  emoji:'🌓', nombre:'Cuarto creciente',msg:'Una semana observando tu piel. Ya empezás a notar sus patrones.' },
-  { min:14,  max:20,  emoji:'🌔', nombre:'Luna llena pronto',msg:'Dos semanas de constancia. Luna está aprendiendo mucho sobre tu piel.' },
-  { min:21,  max:29,  emoji:'🌕', nombre:'Luna llena',      msg:'Tres semanas seguidas. Tu piel y vos se están conociendo de verdad.' },
-  { min:30,  max:59,  emoji:'🌖', nombre:'Luna de hábito',  msg:'Un mes completo. Ya conocés mucho mejor cómo cambia tu piel.' },
-  { min:60,  max:89,  emoji:'🌗', nombre:'Luna sabia',      msg:'Dos meses de registro. Los patrones de tu piel son ahora claros.' },
-  { min:90,  max:999, emoji:'✨', nombre:'Eclipse de hábitos',msg:'Tu constancia está ayudando a Luna a comprender tus patrones profundos.' }
-];
+// ══════════════════════════════════════════════════
+// LUNA PROGRESIVA — la racha se llena día a día
+// ══════════════════════════════════════════════════
+// La luna se ilumina con cada check-in y completa una "lunación"
+// cada 28 días (espejo del ciclo). Al completarla se guarda en
+// "tu cielo" y arranca una luna nueva. Si se corta la racha la luna
+// NO se vacía: el llenado se deriva de los check-ins acumulados, así
+// que los días que faltás simplemente no suman, pero nunca restan.
+var DIAS_POR_LUNA = 28;
 
-function getFaseLunar(dias) {
-  if (dias <= 0) return null;
-  for (var i = 0; i < FASES_LUNARES.length; i++) {
-    if (dias >= FASES_LUNARES[i].min && dias <= FASES_LUNARES[i].max) {
-      return FASES_LUNARES[i];
-    }
-  }
-  return FASES_LUNARES[FASES_LUNARES.length - 1];
+function getLunaEstado() {
+  var checkins = LS.get('checkins') || {};
+  var total = Object.keys(checkins).length;
+  var completas = Math.floor(total / DIAS_POR_LUNA);
+  var enCurso = total % DIAS_POR_LUNA;                  // 0..27 días llenos de la luna actual
+  // Si recién completaste una luna justa (total múltiplo de 28 y > 0),
+  // mostramos esa luna LLENA en el momento, no una nueva vacía.
+  var recienCompletada = (enCurso === 0 && total > 0);
+  var llenos = recienCompletada ? DIAS_POR_LUNA : enCurso;
+  var racha = (typeof calcularRacha === 'function') ? calcularRacha() : 0;
+  return {
+    total: total,
+    completas: completas,
+    enCurso: enCurso,
+    llenos: llenos,                                     // 0..28 días iluminados a dibujar
+    diasPorLuna: DIAS_POR_LUNA,
+    fraccion: llenos / DIAS_POR_LUNA,                   // 0..1 para dibujar la iluminación
+    recienCompletada: recienCompletada,
+    racha: racha
+  };
 }
 
-function getSiguienteFase(dias) {
-  for (var i = 0; i < FASES_LUNARES.length; i++) {
-    if (FASES_LUNARES[i].min > dias) return FASES_LUNARES[i];
+// Path SVG de una luna iluminada de fracción f (0 = nueva, 1 = llena),
+// creciente, iluminada desde la derecha. cx,cy = centro, R = radio.
+function lunaPath(cx, cy, R, f) {
+  f = Math.max(0, Math.min(1, f));
+  var top = (cy - R), bot = (cy + R);
+  if (f <= 0.003) return '';                            // luna nueva: sin luz
+  if (f >= 0.997) {                                     // luna llena: círculo entero
+    return 'M ' + cx + ' ' + top +
+           ' A ' + R + ' ' + R + ' 0 0 1 ' + cx + ' ' + bot +
+           ' A ' + R + ' ' + R + ' 0 0 1 ' + cx + ' ' + top + ' Z';
   }
-  return null;
+  var rx = (R * Math.abs(1 - 2 * f)).toFixed(2);
+  var sweep = f < 0.5 ? 1 : 0;                          // creciente vs gibosa
+  return 'M ' + cx + ' ' + top +
+         ' A ' + R + ' ' + R + ' 0 0 1 ' + cx + ' ' + bot +
+         ' A ' + rx + ' ' + R + ' 0 0 ' + sweep + ' ' + cx + ' ' + top + ' Z';
+}
+
+// Emoji de fase para el contador chico de Inicio (refleja el llenado).
+function lunaEmoji(est) {
+  if (!est || est.total === 0) return '🌑';
+  var f = est.fraccion;
+  if (f >= 0.97) return '🌕';
+  if (f >= 0.60) return '🌔';
+  if (f >= 0.40) return '🌓';
+  if (f >= 0.10) return '🌒';
+  return '🌑';
+}
+
+// Texto cálido según cuánto está llena la luna.
+function textoFaseLuna(est) {
+  var f = est.fraccion;
+  if (f < 0.12) return 'Recién empieza a iluminarse 🌒';
+  if (f < 0.35) return 'Tu luna va creciendo 🌒';
+  if (f < 0.50) return 'Casi a la mitad del camino 🌓';
+  if (f < 0.70) return 'Ya pasaste la mitad ✨';
+  if (f < 0.90) return 'Se viene la luna llena 🌔';
+  return 'A un paso de completarla 🌕';
+}
+
+// Estado de la animación (por sesión, no se persiste).
+var _lunaUltimaFraccion = null;   // última fracción mostrada
+var _lunaGeo = null;              // geometría de la última luna dibujada
+var _lunaRAF = null;              // id de requestAnimationFrame en curso
+
+// Path (sólo 'd') del arco de progreso dorado para una fracción f.
+function lunaArcD(c, ringR, f) {
+  if (f <= 0.001) return '';
+  if (f >= 0.999) {
+    // Círculo completo dibujado como path (para poder animarlo igual)
+    var ty = (c - ringR).toFixed(2), by = (c + ringR).toFixed(2);
+    return 'M ' + c + ' ' + ty +
+           ' A ' + ringR.toFixed(2) + ' ' + ringR.toFixed(2) + ' 0 0 1 ' + c + ' ' + by +
+           ' A ' + ringR.toFixed(2) + ' ' + ringR.toFixed(2) + ' 0 0 1 ' + c + ' ' + ty;
+  }
+  var ang = -90 + f * 360;
+  var rad = ang * Math.PI / 180;
+  var ex = (c + ringR * Math.cos(rad)).toFixed(2);
+  var ey = (c + ringR * Math.sin(rad)).toFixed(2);
+  var large = (f * 360) > 180 ? 1 : 0;
+  return 'M ' + c + ' ' + (c - ringR).toFixed(2) +
+         ' A ' + ringR.toFixed(2) + ' ' + ringR.toFixed(2) + ' 0 ' + large + ' 1 ' + ex + ' ' + ey;
+}
+
+function _easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+// Anima el crecimiento de la luna deslizando el terminador y el arco
+// desde la fracción anterior (fromF) hasta la nueva (toF).
+function animarLunaCrecimiento(fromF, toF) {
+  if (!_lunaGeo) return;
+  var fillEl = document.getElementById('luna-fill');
+  var arcEl = document.getElementById('luna-arc');
+  if (!fillEl) return;
+  var c = _lunaGeo.c, R = _lunaGeo.R, ringR = _lunaGeo.ringR;
+  var dur = 750, start = null;
+  if (_lunaRAF) { cancelAnimationFrame(_lunaRAF); _lunaRAF = null; }
+  // Arrancar en el estado anterior
+  fillEl.setAttribute('d', lunaPath(c, c, R, fromF));
+  if (arcEl) arcEl.setAttribute('d', lunaArcD(c, ringR, fromF));
+  function frame(ts) {
+    if (start === null) start = ts;
+    var t = Math.min(1, (ts - start) / dur);
+    var f = fromF + (toF - fromF) * _easeOutCubic(t);
+    fillEl.setAttribute('d', lunaPath(c, c, R, f));
+    if (arcEl) arcEl.setAttribute('d', lunaArcD(c, ringR, f));
+    if (t < 1) { _lunaRAF = requestAnimationFrame(frame); }
+    else { _lunaRAF = null; }
+  }
+  _lunaRAF = requestAnimationFrame(frame);
+}
+
+// Dibuja la luna SVG con su anillo de progreso (proporcional al llenado).
+// El relleno y el arco son siempre paths con id, para poder animarlos.
+function lunaSVG(est, size) {
+  var s = size, c = s / 2;
+  var R = (s * 0.32);                                   // radio de la luna
+  var ringR = (s * 0.42);                               // radio del anillo
+  var f = est.fraccion;
+  _lunaGeo = { c: c, R: R, ringR: ringR };
+  var svg = '<svg width="' + s + '" height="' + s + '" viewBox="0 0 ' + s + ' ' + s + '" style="display:block;margin:0 auto" aria-hidden="true">';
+  // Anillo base
+  svg += '<circle cx="' + c + '" cy="' + c + '" r="' + ringR.toFixed(2) + '" fill="none" stroke="rgba(155,127,212,.25)" stroke-width="3"/>';
+  // Arco de progreso dorado (path animable)
+  svg += '<path id="luna-arc" d="' + lunaArcD(c, ringR, f) + '" fill="none" stroke="var(--gold)" stroke-width="3.5" stroke-linecap="round"/>';
+  // Base oscura de la luna
+  svg += '<circle cx="' + c + '" cy="' + c + '" r="' + R.toFixed(2) + '" fill="#2a2350"/>';
+  // Parte iluminada (path animable)
+  svg += '<path id="luna-fill" d="' + lunaPath(c, c, R, f) + '" fill="var(--cream)"/>';
+  // Cráteres sutiles cuando ya hay bastante luz
+  if (f > 0.5) {
+    svg += '<circle cx="' + (c + R * 0.30).toFixed(2) + '" cy="' + (c - R * 0.35).toFixed(2) + '" r="' + (R * 0.13).toFixed(2) + '" fill="#d9cfb8" opacity="0.5"/>';
+    svg += '<circle cx="' + (c + R * 0.12).toFixed(2) + '" cy="' + (c + R * 0.30).toFixed(2) + '" r="' + (R * 0.09).toFixed(2) + '" fill="#d9cfb8" opacity="0.45"/>';
+  }
+  svg += '</svg>';
+  return svg;
+}
+
+// Renderiza "Tu cielo": las lunas completadas como colección permanente.
+function renderCieloHTML(est) {
+  if (est.total === 0) return '';
+  if (est.completas === 0) {
+    return '<div style="margin:10px 16px 0;text-align:center;font-size:11px;color:var(--cream-dim);line-height:1.5">' +
+           'Cuando completes los ' + est.diasPorLuna + ' días, tu primera luna se guarda en tu cielo 🌙' +
+           '</div>';
+  }
+  var html = '<div style="margin:12px 16px 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;color:var(--cream)">Tu cielo</div>';
+  html += '<div style="font-size:12px;color:var(--gold)">' + est.completas + (est.completas === 1 ? ' luna completa' : ' lunas completas') + '</div>';
+  html += '</div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">';
+  var mostrar = Math.min(est.completas, 12);
+  for (var i = 0; i < mostrar; i++) {
+    html += '<span style="display:inline-block;width:26px;height:26px;border-radius:50%;background:#f0dca8;border:1.5px solid var(--gold);box-shadow:0 0 6px rgba(212,168,67,.3)"></span>';
+  }
+  if (est.completas > 12) {
+    html += '<span style="font-size:12px;color:var(--cream-dim)">+' + (est.completas - 12) + '</span>';
+  }
+  if (!est.recienCompletada && est.enCurso > 0) {
+    html += '<span style="display:inline-block;width:26px;height:26px;border-radius:50%;background:transparent;border:1.5px dashed rgba(155,127,212,.5)" title="Luna en curso"></span>';
+  }
+  html += '</div></div>';
+  return html;
 }
 
 function calcularMejorRacha() {
@@ -4429,12 +4573,10 @@ function renderSistemRachas() {
   var cont = document.getElementById('sistema-rachas');
   if (!cont) return;
 
-  var racha = calcularRacha();
+  var est = getLunaEstado();
   var mejor = calcularMejorRacha();
-  var fase = getFaseLunar(racha);
-  var siguienteFase = getSiguienteFase(racha);
 
-  // Detectar regreso y mostrar mensaje amable
+  // Detectar regreso y mostrar mensaje amable (sin culpa)
   var esRegreso = detectarRegreso();
   if (esRegreso) {
     var fechas = LS.get('checkinDates') || [];
@@ -4445,76 +4587,62 @@ function renderSistemRachas() {
 
   var html = '';
 
-  // ─── Card principal de fase lunar ───
+  // ─── Card principal: la luna que se llena ───
   html += '<div style="margin:0 16px 12px">';
   html += '<div style="background:linear-gradient(135deg,rgba(155,127,212,.15),rgba(212,120,154,.08));border:1px solid var(--border);border-radius:20px;padding:18px">';
 
-  if (racha === 0) {
-    // Sin racha — invitar a empezar
-    html += '<div style="text-align:center;padding:8px 0">';
-    html += '<div style="font-size:40px;margin-bottom:8px">🌑</div>';
-    html += '<div style="font-size:15px;font-weight:500;color:var(--cream);margin-bottom:4px">Tu viaje empieza hoy</div>';
-    html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Hacé tu primer check-in para comenzar a construir tu hábito de autocuidado 🌸</div>';
+  if (est.total === 0) {
+    // Sin datos — invitar a empezar la primera luna
+    html += '<div style="text-align:center;padding:4px 0">';
+    html += lunaSVG(est, 96);
+    html += '<div style="font-size:15px;font-weight:500;color:var(--cream);margin:10px 0 4px">Tu primera luna empieza hoy</div>';
+    html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Hacé tu primer check-in y mirá cómo se ilumina, un poquito cada día 🌙</div>';
     html += '</div>';
   } else {
-    // Con racha — mostrar fase actual
-    html += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">';
-    html += '<div style="font-size:42px;flex-shrink:0">' + (fase ? fase.emoji : '🌙') + '</div>';
-    html += '<div style="flex:1">';
-    html += '<div style="font-size:11px;color:var(--purple-light);font-weight:600;letter-spacing:1.5px;margin-bottom:2px">TU FASE LUNAR</div>';
-    html += '<div style="font-size:18px;font-weight:600;color:var(--cream);margin-bottom:2px">' + (fase ? fase.nombre : 'Luna') + '</div>';
-    html += '<div style="font-size:12px;color:var(--gold)">' + racha + ' día' + (racha !== 1 ? 's' : '') + ' seguido' + (racha !== 1 ? 's' : '') + '</div>';
-    html += '</div>';
-    // Récord
-    if (mejor > racha) {
-      html += '<div style="text-align:center;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.25);border-radius:12px;padding:8px 10px;flex-shrink:0">';
-      html += '<div style="font-size:16px">⭐</div>';
-      html += '<div style="font-size:10px;color:var(--gold);font-weight:600">' + mejor + '</div>';
-      html += '<div style="font-size:9px;color:var(--cream-dim)">récord</div>';
-      html += '</div>';
-    } else if (mejor === racha && racha > 1) {
-      html += '<div style="text-align:center;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.25);border-radius:12px;padding:8px 10px;flex-shrink:0">';
-      html += '<div style="font-size:16px">🏆</div>';
-      html += '<div style="font-size:9px;color:var(--gold);font-weight:600">¡Récord!</div>';
-      html += '</div>';
-    }
-    html += '</div>';
-
-    // Mensaje motivador
-    if (fase) {
-      html += '<div style="font-size:13px;color:var(--cream-dim);line-height:1.6;margin-bottom:14px;padding:10px 12px;background:rgba(0,0,0,.2);border-radius:12px">';
-      html += fase.msg;
-      html += '</div>';
-    }
-
-    // Progreso hacia siguiente fase
-    if (siguienteFase) {
-      var diasActuales = racha - (fase ? fase.min : 0);
-      var diasTotales = siguienteFase.min - (fase ? fase.min : 0);
-      var pct = Math.min(100, Math.round((diasActuales / diasTotales) * 100));
-      var diasFaltan = siguienteFase.min - racha;
-      html += '<div>';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">';
-      html += '<div style="font-size:11px;color:var(--cream-dim)">Próxima fase: <strong style="color:var(--cream)">' + siguienteFase.emoji + ' ' + siguienteFase.nombre + '</strong></div>';
-      html += '<div style="font-size:11px;color:var(--purple-light)">' + diasFaltan + ' día' + (diasFaltan !== 1 ? 's' : '') + '</div>';
-      html += '</div>';
-      html += '<div style="background:rgba(155,127,212,.15);border-radius:8px;height:6px;overflow:hidden">';
-      html += '<div style="background:linear-gradient(90deg,var(--purple),var(--pink));height:100%;width:' + pct + '%;border-radius:8px;transition:width .6s ease"></div>';
-      html += '</div>';
-      html += '</div>';
+    // Con datos — luna grande con anillo de progreso
+    html += '<div style="text-align:center">';
+    html += lunaSVG(est, 150);
+    html += '<div style="font-size:11px;color:var(--purple-light);font-weight:600;letter-spacing:1.5px;margin-top:6px">TU LUNA DE ESTE MES</div>';
+    if (est.recienCompletada) {
+      html += '<div style="font-size:17px;font-weight:600;color:var(--cream);margin:3px 0">🌕 ¡Luna llena!</div>';
+      html += '<div style="font-size:12px;color:var(--gold);line-height:1.5">Completaste una lunación. Mañana empieza una nueva 🌙</div>';
     } else {
-      // Ya está en la fase máxima
-      html += '<div style="text-align:center;font-size:12px;color:var(--gold)">✨ Has alcanzado la fase máxima. Tu constancia es inspiradora.</div>';
+      html += '<div style="font-size:17px;font-weight:600;color:var(--cream);margin:3px 0">Día ' + est.llenos + ' de ' + est.diasPorLuna + '</div>';
+      html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">' + textoFaseLuna(est) + '</div>';
+      var faltan = est.diasPorLuna - est.llenos;
+      html += '<div style="font-size:12px;color:var(--purple-light);margin-top:6px">' + (faltan === 1 ? 'Falta 1 día para luna llena ✨' : 'Faltan ' + faltan + ' días para luna llena') + '</div>';
+    }
+    html += '</div>';
+
+    // Dato de racha corrida (discreto, con récord)
+    var racha = est.racha;
+    if (racha >= 2) {
+      var recordTxt = '';
+      if (mejor > racha) recordTxt = ' · récord: ' + mejor;
+      else if (racha === mejor) recordTxt = ' · ¡tu récord!';
+      html += '<div style="text-align:center;font-size:11px;color:var(--cream-dim);margin-top:10px">🔥 ' + racha + ' días seguidos' + recordTxt + '</div>';
     }
 
-    // Mostrar escudos
+    // Escudos (se mantiene el sistema actual)
     html += '<div id="escudos-display" style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(155,127,212,.2)"></div>';
   }
 
-  html += '</div>';
-  html += '</div>';
+  html += '</div>'; // fin card luna
+
+  // ─── Tu cielo: colección permanente de lunas completas ───
+  html += renderCieloHTML(est);
+
+  html += '</div>'; // fin wrapper
 
   cont.innerHTML = html;
+
+  // Si la luna creció respecto al último estado mostrado (check-in nuevo),
+  // animar el deslizamiento del terminador y el arco. Si bajó (reseteo a
+  // luna nueva tras completar) o es el primer render, se dibuja directo.
+  if (est.total > 0 && typeof _lunaUltimaFraccion === 'number' && est.fraccion > _lunaUltimaFraccion + 0.001) {
+    animarLunaCrecimiento(_lunaUltimaFraccion, est.fraccion);
+  }
+  _lunaUltimaFraccion = est.fraccion;
 }
 
 // ══════════════════════════════════════════════════
