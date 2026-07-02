@@ -759,7 +759,7 @@ select.input-field{appearance:none}
     <div class="modal-title">🔐 Política de Privacidad</div>
     <div class="modal-body">
       <h4>1. Responsable del tratamiento</h4>
-      <p>KoreanPampa, emprendimiento unipersonal con domicilio en General Acha, La Pampa, Argentina. Para cualquier consulta sobre tus datos podés escribir a <strong>[completá: tu correo de privacidad]</strong> o contactarnos por WhatsApp.</p>
+      <p>KoreanPampa, emprendimiento unipersonal con domicilio en General Acha, La Pampa, Argentina. Para cualquier consulta sobre tus datos podés escribir a <strong>koreanpampa@gmail.com</strong> o contactarnos por WhatsApp.</p>
 
       <h4>2. Qué datos tratamos</h4>
       <p>• <strong>Identificación:</strong> nombre y edad.<br>
@@ -799,7 +799,7 @@ select.input-field{appearance:none}
       <h4>12. Cambios en esta política</h4>
       <p>Si modificamos esta política, te lo notificaremos dentro de la app antes de que entre en vigencia.</p>
 
-      <p style="margin-top:12px;font-size:11px;color:var(--cream-dim)">Versión 2.1 · Entrada en vigencia: [completá fecha] · Luna App — KoreanPampa, General Acha, La Pampa, Argentina</p>
+      <p style="margin-top:12px;font-size:11px;color:var(--cream-dim)">Versión 2.1 · Entrada en vigencia: 1 de julio de 2026 · Luna App — KoreanPampa, General Acha, La Pampa, Argentina</p>
     </div>
     <button class="btn btn-ghost btn-full" style="margin-top:16px" onclick="closeModal('modal-privacy')">Entendido</button>
   </div>
@@ -866,11 +866,10 @@ select.input-field{appearance:none}
 // LUNA v4 — KoreanPampa
 // ═══════════════════════════════════════════════
 
-// Contraseña admin hasheada con SHA-256.
-// Para cambiarla, ejecutá en la consola del navegador:
-// crypto.subtle.digest('SHA-256',new TextEncoder().encode('tuNuevaPass')).then(b=>console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
-// Luego reemplazá el valor de ADMIN_HASH con el resultado.
-const ADMIN_HASH = '1460ca825d91df7fa63dc0af0580142bf6f73069357d1066d98231bf8f6e8fcf';
+// Admin real con Firebase Authentication (email + contraseña).
+// La cuenta se crea UNA sola vez en Firebase Console > Authentication > Users.
+// La contraseña ya no vive en este archivo: la verifica el servidor de Google.
+const ADMIN_EMAIL = 'koreanpampa@gmail.com';
 // ══════════════════════════════════════════════════
 // FIREBASE / FIRESTORE — SINCRONIZACIÓN EN LA NUBE
 // ══════════════════════════════════════════════════
@@ -898,22 +897,31 @@ async function initFirebase() {
     firebase.initializeApp(FIREBASE_CONFIG);
     db = firebase.firestore();
 
-    // ── Autenticación anónima (best-effort) ──
-    // Si todavía no está habilitada en la consola, la app sigue funcionando
-    // igual que hasta ahora. Cuando se habilite, cada dispositivo recibe un uid.
+    // ── Autenticación ──
+    // Si ya hay una sesión guardada (anónima o admin), se reutiliza.
+    // Si no hay ninguna, se crea una sesión anónima nueva.
     try {
       if (firebase.auth) {
-        await firebase.auth().signInAnonymously();
         await new Promise(function (resolve) {
+          var resolved = false;
+          function done() { if (!resolved) { resolved = true; resolve(); } }
           var off = firebase.auth().onAuthStateChanged(function (u) {
-            if (u) { off(); resolve(); }
+            off();
+            if (u) {
+              authUid = u.uid;
+              done();
+            } else {
+              firebase.auth().signInAnonymously().then(function (cred) {
+                if (cred && cred.user) authUid = cred.user.uid;
+                done();
+              }).catch(function () { done(); });
+            }
           });
-          setTimeout(resolve, 4000); // no quedarse esperando para siempre
+          setTimeout(done, 6000); // no quedarse esperando para siempre
         });
-        if (firebase.auth().currentUser) authUid = firebase.auth().currentUser.uid;
       }
     } catch (eAuth) {
-      console.log('Auth anónima aún no disponible — sigo sin ella');
+      console.log('Auth no disponible — sigo sin ella');
     }
 
     firebaseReady = true;
@@ -1367,21 +1375,13 @@ let currentTab = 'home';
 function btnEntrar() {
   var all = document.querySelectorAll('.screen');
   for (var i=0;i<all.length;i++) all[i].classList.remove('active');
-  // Si hay codigos activos, pedir codigo. Si no, ir directo al onboarding
-  var codes = getAllCodes();
-  var hayCodigos = Object.values(codes).some(function(c) { return c.active !== false; });
-  if (hayCodigos) {
-    document.getElementById('sc-code').classList.add('active');
-  } else {
-    document.getElementById('sc-onboarding').classList.add('active');
-  }
+  // El acceso siempre es con código: lo valida Firestore, no una lista local.
+  document.getElementById('sc-code').classList.add('active');
 }
 
 function init() {
   generateStars();
   programarNotificaciones();
-  // Cargar codigos desde Google Sheets
-  cargarCodesDesdeSheets();
   // Inicializar Firebase en segundo plano
   initFirebase();
   // Cargar quiz guardado
@@ -1433,75 +1433,38 @@ function showScreen(id) {
   }
 }
 
-// ─── CÓDIGOS BETA HARDCODEADOS ───────────────────
-// Para agregar nuevas usuarias: añadí su código a este objeto
-// Formato: 'CODIGO': { name: 'Nombre', active: true }
-const BETA_CODES = {
-  'ELI4333FT':  { name: 'Elisabet',  active: true },
-  'SENA9195NY': { name: 'Senaida',   active: true },
-  'EMIL3733G3': { name: 'Emilse',    active: true },
-  'ALE2443ZR':  { name: 'Alejandra', active: true },
-  'PATO3410U9': { name: 'Pato',      active: true },
-  'JENN9342JL': { name: 'Jenni',     active: true },
-  'CAMI4386UT': { name: 'Camila',    active: true },
-  'MARC27927E': { name: 'Marce',     active: true },
-  'MARI2433KE': { name: 'Mariel',    active: true },
-  'BEL2585GQ':  { name: 'Belen',     active: true },
-  'ESTE9661R9': { name: 'Estefy',    active: true }
-};
+// ─── VALIDACIÓN DE CÓDIGOS (vía Firestore) ────────
+// Ya no hay lista de códigos en el código fuente ni en Google Sheets.
+// El código es válido si existe su documento en usuarios/{codigo} y las
+// reglas de Firestore permiten que este dispositivo se vincule (join).
 
-// Combina los códigos hardcodeados con los del panel admin (localStorage)
-// GOOGLE SHEETS - CARGA DE CODIGOS
-var SHEET_ID = '1hKKLc-ops8gfZ6LBGi2BIDtQhW2G45gsjnjSIm6Y68A';
-var sheetCodesLoaded = false;
-
-async function cargarCodesDesdeSheets() {
-  try {
-    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&sheet=Hoja1';
-    var response = await fetch(url);
-    if (!response.ok) return;
-    var csv = await response.text();
-    var lines = csv.trim().split('\n');
-    var codes = LS.get('codes') || {};
-    // Saltar la primera fila (encabezados)
-    for (var i = 1; i < lines.length; i++) {
-      var cols = lines[i].split(',');
-      if (cols.length >= 3) {
-        var code = cols[0].trim().replace(/"/g, '').toUpperCase();
-        var name = cols[1].trim().replace(/"/g, '');
-        var active = cols[2].trim().replace(/"/g, '').toUpperCase() === 'TRUE';
-        if (code) codes[code] = { name: name, active: active };
-      }
-    }
-    LS.set('codes', codes);
-    sheetCodesLoaded = true;
-  } catch(e) {}
-}
-
-
-function getAllCodes() {
-  var adminCodes = LS.get('codes') || {};
-  var all = {};
-  // Primero los hardcodeados
-  Object.keys(BETA_CODES).forEach(function(k) { all[k] = BETA_CODES[k]; });
-  // Luego los del admin (pueden sobreescribir si el admin desactiva uno)
-  Object.keys(adminCodes).forEach(function(k) { all[k] = adminCodes[k]; });
-  return all;
+// Espera a que Firebase termine de inicializar (máx ~8 segundos).
+async function esperarFirebase() {
+  for (var i = 0; i < 40; i++) {
+    if (firebaseReady && authUid) return true;
+    await new Promise(function (r) { setTimeout(r, 200); });
+  }
+  return firebaseReady && !!authUid;
 }
 
 async function checkCode() {
-  if (!sheetCodesLoaded) await cargarCodesDesdeSheets();
   var input = document.getElementById('codeInput');
   var val = input ? input.value.trim().toUpperCase() : '';
-  var codes = getAllCodes();
   var errEl = document.getElementById('codeError');
-  if (codes[val] && codes[val].active !== false) {
+  if (!val) return;
+
+  var listo = await esperarFirebase();
+  if (!listo) {
+    showToast('Necesitás conexión a internet para validar tu código 🌙');
+    return;
+  }
+
+  // El intento de vinculación ES la validación:
+  // si el documento existe y está activo, Firestore lo permite.
+  var ok = await claimCodeClient(val);
+  if (ok) {
     LS.set('myCode', val);
-    // Vincular este dispositivo al código y cargar la nube.
-    if (firebaseReady) {
-      await claimCodeClient(val);
-      await loadFromCloud(val);
-    }
+    await loadFromCloud(val);
     var accepted = LS.get('termsAccepted');
     if (errEl) errEl.style.display = 'none';
     if (!accepted) { showScreen('onboarding'); }
@@ -2840,33 +2803,25 @@ function confirmDeleteData() {
 // ─── ADMIN ───────────────────────────────────────
 function openAdminLogin() { openModal('modal-admin-login'); }
 
-var adminAttempts = 0;
-var adminBlockedUntil = 0;
-
 async function tryAdminLogin() {
-  // Rate limiting: bloquear 30 segundos despues de 3 intentos fallidos
-  if (Date.now() < adminBlockedUntil) {
-    var secsLeft = Math.ceil((adminBlockedUntil - Date.now()) / 1000);
-    showToast('Demasiados intentos. Esperá ' + secsLeft + ' segundos.');
-    return;
-  }
-
   var pass = document.getElementById('admin-pass-input').value;
   if (!pass) return;
+  var errEl = document.getElementById('admin-pass-error');
 
-  // Hash SHA-256 de la contraseña ingresada
-  var encoder = new TextEncoder();
-  var data = encoder.encode(pass);
-  var hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  var hashArray = Array.from(new Uint8Array(hashBuffer));
-  var hashHex = hashArray.map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+  try {
+    // La contraseña la verifica el servidor de Google (Firebase Auth).
+    // Google además bloquea automáticamente los intentos repetidos.
+    var cred = await firebase.auth().signInWithEmailAndPassword(ADMIN_EMAIL, pass);
+    authUid = cred.user.uid;
 
-  if (hashHex === ADMIN_HASH) {
-    adminAttempts = 0;
-    // Token de sesion temporal (solo dura esta sesion, no persiste entre recargas)
-    var sessionToken = hashHex.slice(0,16) + Date.now().toString(36);
+    // Token de sesión para la UI (la seguridad real está en las reglas)
+    var sessionToken = 'adm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     sessionStorage.setItem('adminSession', sessionToken);
     LS.set('isAdmin', sessionToken);
+
+    // Ahora sí tenemos permiso para leer el registro de códigos
+    await cargarCodesDesdeFirestore();
+
     closeModal('modal-admin-login');
     document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
     document.getElementById('sc-admin').classList.add('active');
@@ -2874,20 +2829,22 @@ async function tryAdminLogin() {
     renderAdmin();
     renderCodesList();
     renderProdsList();
-  } else {
-    adminAttempts++;
-    if (adminAttempts >= 3) {
-      adminBlockedUntil = Date.now() + 30000;
-      adminAttempts = 0;
-      showToast('3 intentos fallidos. Esperá 30 segundos.');
+    if (errEl) errEl.style.display = 'none';
+  } catch (e) {
+    if (e && e.code === 'auth/too-many-requests') {
+      showToast('Demasiados intentos. Esperá unos minutos.');
+    } else if (e && e.code === 'auth/network-request-failed') {
+      showToast('Sin conexión. El panel admin necesita internet.');
+    } else {
+      if (errEl) errEl.style.display = 'block';
     }
-    document.getElementById('admin-pass-error').style.display = 'block';
   }
 }
 
 function adminLogout() {
   LS.del('isAdmin');
   sessionStorage.removeItem('adminSession');
+  try { firebase.auth().signOut(); } catch (e) {}
   location.reload();
 }
 
@@ -2922,6 +2879,13 @@ function updateAdminStats() {
 async function guardarCodeEnFirestore(code, name) {
   if (!firebaseReady || !db) return false;
   try {
+    // 1) Crear el documento de la usuaria: es lo que hace válido al código.
+    //    authUids vacío = todavía nadie lo reclamó; active = puede reclamarse.
+    await db.collection('usuarios').doc(code).set(
+      { authUids: [], active: true, _created: new Date().toISOString() },
+      { merge: true }
+    );
+    // 2) Registro interno de códigos (solo lo ve el admin).
     var snap = await db.collection('config').doc('codes').get();
     var existing = {};
     if (snap.exists && snap.data() && snap.data().codes) existing = snap.data().codes;
@@ -2945,6 +2909,14 @@ async function cargarCodesDesdeFirestore() {
 async function toggleCodeEnFirestore(code, active) {
   if (!firebaseReady || !db) return;
   try {
+    // Desactivar = bloquear el acceso de verdad: se marca inactivo y se
+    // vacía authUids (los dispositivos vinculados pierden el acceso).
+    // Los datos NO se borran: si se reactiva, la clienta recupera todo.
+    if (active) {
+      await db.collection('usuarios').doc(code).set({ active: true }, { merge: true });
+    } else {
+      await db.collection('usuarios').doc(code).set({ active: false, authUids: [] }, { merge: true });
+    }
     var snap = await db.collection('config').doc('codes').get();
     if (snap.exists && snap.data() && snap.data().codes && snap.data().codes[code]) {
       var data = snap.data().codes;
