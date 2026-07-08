@@ -3809,8 +3809,30 @@ function renderCicloHome() {
   if (!cont) return;
   var s = calcularCicloStats();
 
-  // Sin datos de ciclo: invitación cálida, no una fecha inventada
+  // LA ETAPA VA PRIMERO: en Nueva etapa (o Variable elegida a mano) nunca
+  // pedimos registrar el período, haya o no datos de ciclo. Pedirle a una
+  // usuaria en menopausia que registre algo que ya no le sucede rompe
+  // toda la promesa de "Luna te entiende".
+  var det = detectarEtapaVital();
+  if (det.etapa === 'menopausia') { renderHomeMenopausia(cont, det); return; }
+  if (det.etapa === 'irregular')  { renderHomeIrregular(cont, det);  return; }
+
+  // Sin datos de ciclo (y etapa regular): invitación cálida, no una fecha inventada.
+  // A las usuarias de 40+/50+ que todavía no eligieron etapa no les asumimos que
+  // menstrúan: las invitamos a contar cómo viene su ciclo.
   if (!s) {
+    var edadQuiz = (LS.get('skinResult') || {}).age;
+    var sinEtapa = (typeof getEtapaManual === 'function') ? !getEtapaManual() : true;
+    if (sinEtapa && (edadQuiz === '40s' || edadQuiz === '50s')) {
+      cont.innerHTML =
+        '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">' +
+          '<div class="card-label">🌙 TU CICLO</div>' +
+          '<div style="font-size:14px;color:var(--cream);margin-bottom:4px">Contame cómo viene tu ciclo</div>' +
+          '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Regular, variable o en una nueva etapa: elegilo y Luna adapta todo a vos, sin pedirte nada que no va con tu momento 🌸</div>' +
+          '<div style="margin-top:10px;font-size:12px;color:var(--purple-light)">Elegir mi etapa →</div>' +
+        '</div>';
+      return;
+    }
     cont.innerHTML =
       '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">' +
         '<div class="card-label">🌙 TU CICLO</div>' +
@@ -3820,11 +3842,6 @@ function renderCicloHome() {
       '</div>';
     return;
   }
-
-  // 40+/50+: si el ciclo es variable o nueva etapa, no mostramos "atraso" ni cuenta regresiva.
-  var det = detectarEtapaVital();
-  if (det.etapa === 'menopausia') { renderHomeMenopausia(cont, det); return; }
-  if (det.etapa === 'irregular')  { renderHomeIrregular(cont, det);  return; }
 
   var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
