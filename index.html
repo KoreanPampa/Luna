@@ -3578,10 +3578,12 @@ function updateHomeGreeting() {
   // Nueva etapa: subtítulos centrados en cuidado, sin mencionar el ciclo
   if ((typeof getEtapaManual === 'function') && getEtapaManual() === 'menopausia') {
     subs = [
-      'Tu piel está en un momento nuevo — cuidémosla juntas 🌙',
+      'Cuidarte también es un ritual — empecemos por tu piel 💜',
       'Nutrición y firmeza: lo que tu piel agradece hoy 💜',
       'No te olvides del protector solar — es tu mejor aliado ☀️',
-      'Un mimo para tu piel hoy: hidratación profunda 💧'
+      'Un mimo para tu piel hoy: hidratación profunda 💧',
+      'Hoy también estoy acá para acompañarte 🌙',
+      'Tu constancia es lo que hace la diferencia ✨'
     ];
   }
 
@@ -3777,14 +3779,53 @@ function detectarEtapaVital() {
            diasDesde:diasDesde, sd:Math.round(sd*10)/10 };
 }
 
+// Rotación diaria de la card de inicio en Nueva etapa: cada día un título y un
+// consejo accionable distintos (piel + bienestar peri/menopausia). Determinístico
+// por fecha: no cambia al recargar, sí cambia mañana.
+var HOME_MENO_ROTACION = [
+  { t: 'Tu piel te pide constancia, no perfección', e: '💧', tip: 'Ceramidas y ácido hialurónico a la mañana, y protector solar aunque esté nublado. Ese dúo sostiene la firmeza y la luminosidad.' },
+  { t: 'El sueño es tu mejor cosmético', e: '😴', tip: 'Dormitorio fresco y horarios parejos. Dormir mejor baja los sofocos nocturnos y se nota en la piel al otro día.' },
+  { t: 'Hoy, un poco de fuerza 💪', e: '🏋️‍♀️', tip: '15-20 minutos de ejercicio de fuerza, aunque sea con botellas de agua. Es lo más respaldado para huesos, músculos y ánimo en esta etapa.' },
+  { t: 'De noche, tu piel trabaja para vos', e: '🌙', tip: 'Péptidos o un retinoide suave si tu piel lo tolera, de a poco. La constancia le gana a la intensidad.' },
+  { t: 'Los sofocos tienen sus disparadores', e: '🌬️', tip: 'Café, alcohol, picante y ambientes calurosos suelen estar detrás. Detectar el tuyo es media batalla ganada.' },
+  { t: 'Agua: tu aliada silenciosa', e: '💧', tip: 'Tu piel retiene menos agua que antes. Tomá durante todo el día y sumá una crema más nutritiva de noche.' },
+  { t: 'Moverte cambia el día', e: '🚶‍♀️', tip: 'Una caminata de 15 minutos mejora el ánimo, el sueño y hasta la niebla mental. No hace falta más para empezar.' },
+  { t: 'Tu barrera es tu escudo', e: '🌿', tip: 'Si la piel está sensible o seca, simplificá: limpieza suave, ceramidas y SPF. Menos productos, mejor elegidos.' },
+  { t: 'El ánimo también se cuida', e: '💜', tip: 'Hablarlo con alguien de confianza, moverte un poco y dormir bien: el trío que más sostiene en esta etapa.' },
+  { t: 'Luz de día, reparación de noche', e: '✨', tip: 'Vitamina C a la mañana para la luminosidad, y de noche una crema nutritiva para que la piel se recupere mientras dormís.' }
+];
+
 function renderHomeMenopausia(cont, det) {
+  var hoy = new Date();
+  var diaAnio = Math.floor((hoy - new Date(hoy.getFullYear(), 0, 0)) / 86400000);
+  // Si hoy marcó síntomas, la card responde a eso; si no, rota el consejo del día
+  var syms = (typeof sintomasDeHoy === 'function') ? sintomasDeHoy() : [];
+  var conTip = syms.filter(function(s) { return (typeof BIENESTAR_MENO !== 'undefined') && BIENESTAR_MENO[s]; });
+  var titulo, emoji, tip, cta;
+  if (conTip.length > 0) {
+    // Rotar entre los síntomas marcados si hay varios
+    var sHoy = conTip[diaAnio % conTip.length];
+    var tips = BIENESTAR_MENO[sHoy];
+    var elegido = tips[diaAnio % tips.length];
+    titulo = 'Para cuidarte hoy 💜';
+    emoji = elegido.e;
+    tip = elegido.t;
+    cta = 'Ver cómo viene tu mes →';
+  } else {
+    var item = HOME_MENO_ROTACION[diaAnio % HOME_MENO_ROTACION.length];
+    titulo = item.t;
+    emoji = item.e;
+    tip = item.tip;
+    cta = 'Contame cómo te sentís hoy →';
+  }
   var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
-  html += '<div class="card-label">🌙 TU PIEL HOY</div>';
-  html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:2px">Tu piel está en un momento nuevo 🌙</div>';
-  html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5;margin-bottom:10px">Luna te acompaña cuidándola día a día, sin contar fases del ciclo.</div>';
+  html += '<div class="card-label">🌙 TU CUIDADO HOY</div>';
+  html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:10px">' + titulo + '</div>';
   html += '<div style="padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--purple-light);line-height:1.6">';
-  html += '💧 Hoy tu piel pide nutrición y barrera fuerte. Ceramidas, ácido hialurónico y péptidos para firmeza. Y el protector solar, todos los días — es lo que la mantiene pareja y luminosa.';
-  html += '</div></div>';
+  html += emoji + ' ' + tip;
+  html += '</div>';
+  html += '<div style="margin-top:10px;font-size:12px;color:var(--pink)">' + cta + '</div>';
+  html += '</div>';
   cont.innerHTML = html;
 }
 
