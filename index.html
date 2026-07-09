@@ -3109,7 +3109,10 @@ async function guardarCodeEnFirestore(code, name) {
     if (snap.exists && snap.data() && snap.data().codes) existing = snap.data().codes;
     existing[code] = { name: name, active: true, created: new Date().toISOString() };
     await db.collection('config').doc('codes').set({ codes: existing }, { merge: true });
-    LS.set('codes', existing);
+    // Merge conservador: mantener localStorage actualizado pero sin perder datos locales
+    var localData = LS.get('codes') || {};
+    var merged = Object.assign({}, existing, localData);
+    LS.set('codes', merged);
     return true;
   } catch(e) { return false; }
 }
@@ -3119,7 +3122,11 @@ async function cargarCodesDesdeFirestore() {
   try {
     var snap = await db.collection('config').doc('codes').get();
     if (snap.exists && snap.data() && snap.data().codes) {
-      LS.set('codes', snap.data().codes);
+      // Merge conservador: Firestore es backup, localStorage tiene precedencia
+      var fsData = snap.data().codes || {};
+      var localData = LS.get('codes') || {};
+      var merged = Object.assign({}, fsData, localData);
+      LS.set('codes', merged);
     }
   } catch(e) {}
 }
@@ -3140,7 +3147,10 @@ async function toggleCodeEnFirestore(code, active) {
       var data = snap.data().codes;
       data[code].active = active;
       await db.collection('config').doc('codes').set({ codes: data }, { merge: true });
-      LS.set('codes', data);
+      // Merge conservador: mantener localStorage actualizado sin perder datos locales
+      var localData = LS.get('codes') || {};
+      var merged = Object.assign({}, data, localData);
+      LS.set('codes', merged);
     }
   } catch(e) {}
 }
@@ -3153,7 +3163,11 @@ async function deleteCodeEnFirestore(code) {
       var data = snap.data().codes;
       delete data[code];
       await db.collection('config').doc('codes').set({ codes: data }, { merge: true });
-      LS.set('codes', data);
+      // Merge conservador: respetar la eliminación de Firestore pero conservar datos locales nuevos
+      var localData = LS.get('codes') || {};
+      delete localData[code]; // Respetar la eliminación
+      var merged = Object.assign({}, data, localData);
+      LS.set('codes', merged);
     }
   } catch(e) {}
 }
