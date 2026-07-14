@@ -93,6 +93,24 @@ html[data-theme="dark"] #stars{display:block;opacity:.35}
 .nav-btn.active{color:var(--purple-light)}
 .nav-btn .nav-icon{font-size:17px;line-height:1;filter:grayscale(1);opacity:.6;transition:opacity .2s}
 .nav-btn.active .nav-icon{opacity:1}
+/* ─── UX Home v2: accesos rápidos, pila de cartas, pista de scroll y CTAs ─── */
+.quick-row{display:flex;justify-content:space-between;gap:4px;margin:2px 16px 14px}
+.quick-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+.quick-ic{width:52px;height:52px;border-radius:50%;background:var(--purple);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(var(--accent-rgb),.35);transition:transform .15s}
+.quick-item:active .quick-ic{transform:scale(.9)}
+.quick-lbl{font-size:10px;font-weight:600;color:var(--purple-light);letter-spacing:.3px;text-align:center;line-height:1.25}
+#ciclo-home .card{position:relative;z-index:2;box-shadow:0 8px 22px rgba(45,42,36,.12)}
+html[data-theme="dark"] #ciclo-home .card{box-shadow:0 8px 22px rgba(0,0,0,.4)}
+#checkin-card{position:relative;z-index:1;margin-top:-26px;padding-top:36px}
+.scroll-hint{position:absolute;bottom:74px;left:0;right:0;z-index:9;display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none;transition:opacity .4s}
+.scroll-hint.oculto{opacity:0}
+.scroll-hint .hint-pill{background:var(--nav-bg);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;color:var(--purple-light);box-shadow:var(--shadow)}
+.scroll-hint .flechita{font-size:16px;line-height:1;color:var(--purple);animation:hintBounce 1.6s ease-in-out infinite}
+@keyframes hintBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.card-label-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.card-label-row .card-label{margin-bottom:0}
+.card-cta{font-size:11px;font-weight:700;color:var(--purple);white-space:nowrap;flex-shrink:0}
+.card-cta::after{content:' ›';font-size:14px;font-weight:700}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin:12px 16px;box-shadow:var(--shadow)}
 .card-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--cream-dim);margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .card-title{font-family:'DM Serif Display',serif;font-size:24px;font-weight:400;line-height:1.25;margin-bottom:8px}
@@ -346,7 +364,7 @@ select.input-field{appearance:none}
 <div id="stars"></div>
 <div id="app">
 <div id="navbar">
-  <button class="nav-btn active" onclick="goTab('home')" id="nav-home"><span class="nav-icon">🌙</span>Inicio</button>
+  <button class="nav-btn active" onclick="goTab('home')" id="nav-home"><span class="nav-icon">🌙</span>Hoy</button>
   <button class="nav-btn" onclick="goTab('skin')" id="nav-skin"><span class="nav-icon">✨</span>Mi piel</button>
   <button class="nav-btn" onclick="goTab('ciclo')" id="nav-ciclo"><span class="nav-icon">🌸</span>Ciclo</button>
   <button class="nav-btn" onclick="goTab('yo')" id="nav-yo"><span class="nav-icon">👤</span>Yo</button>
@@ -421,8 +439,13 @@ select.input-field{appearance:none}
       <div class="card-title" id="home-greeting">Hola 🌸</div>
       <div class="card-body" id="home-greeting-sub">Tu momento de cuidarte 🌸</div>
     </div>
+    <div class="quick-row">
+      <button class="quick-item" onclick="goTab('glosario')"><span class="quick-ic">📖</span><span class="quick-lbl">Guía de<br>skincare</span></button>
+      <button class="quick-item" onclick="quickRutina('am')"><span class="quick-ic">🧴</span><span class="quick-lbl">Rutina<br>mañana</span></button>
+      <button class="quick-item" onclick="quickRutina('pm')"><span class="quick-ic">🌙</span><span class="quick-lbl">Rutina<br>noche</span></button>
+      <button class="quick-item" onclick="goTab('ciclo')"><span class="quick-ic">🩸</span><span class="quick-lbl">Consejos<br>hoy</span></button>
+    </div>
     <div id="ciclo-home"></div>
-    <div id="skin-trend-home"></div>
     <div class="card" id="checkin-card">
       <div class="card-label">🌿 CHECK-IN DIARIO</div>
       <div style="font-size:14px;margin-bottom:4px;color:var(--cream)">¿Cómo está tu piel hoy?</div>
@@ -455,6 +478,7 @@ select.input-field{appearance:none}
       </div>
       <div id="checkin-done" style="display:none;text-align:center;padding:10px 0"><div style="font-size:28px;margin-bottom:6px" id="checkin-done-emoji">✨</div><div style="font-size:13px;color:var(--purple-light);font-weight:500">Check-in registrado para hoy</div><div style="font-size:12px;color:var(--cream-dim);margin-top:6px;line-height:1.5" id="checkin-done-msg">Volvé mañana para seguir tu racha 🌙</div></div>
     </div>
+    <div id="skin-trend-home"></div>
     <div class="streak-row">
       <div class="streak-item"><div class="streak-val" id="streak-days">0</div><div class="streak-lbl">Días seguidos</div></div>
       <div class="streak-item"><div class="streak-val" id="streak-total">0</div><div class="streak-lbl">Check-ins</div></div>
@@ -487,6 +511,10 @@ select.input-field{appearance:none}
       </div>
       <div id="luna-mensaje-texto" style="font-size:14px;color:var(--cream);line-height:1.6"></div>
     </div>
+  </div>
+  <div class="scroll-hint" id="scroll-hint">
+    <div class="hint-pill">Seguí bajando para ver más 🌿</div>
+    <div class="flechita">⌄</div>
   </div>
 </div>
 <div class="screen" id="sc-skin">
@@ -3865,6 +3893,12 @@ var HOME_MENO_ROTACION = [
   { t: 'Luz de día, reparación de noche', e: '✨', tip: 'Vitamina C a la mañana para la luminosidad, y de noche una crema nutritiva para que la piel se recupere mientras dormís.' }
 ];
 
+// Fila de etiqueta + CTA "Ver más ›" para las cards cliqueables de la home.
+// Hace evidente que tocar la card abre otra pantalla.
+function ctaRow(label, cta) {
+  return '<div class="card-label-row"><div class="card-label">' + label + '</div><div class="card-cta">' + (cta || 'Ver más') + '</div></div>';
+}
+
 function renderHomeMenopausia(cont, det) {
   var hoy = new Date();
   var diaAnio = Math.floor((hoy - new Date(hoy.getFullYear(), 0, 0)) / 86400000);
@@ -3889,7 +3923,7 @@ function renderHomeMenopausia(cont, det) {
     cta = 'Contame cómo te sentís hoy →';
   }
   var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
-  html += '<div class="card-label">🌙 TU CUIDADO HOY</div>';
+  html += ctaRow('🌙 TU CUIDADO HOY');
   html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:10px">' + titulo + '</div>';
   html += '<div style="padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--purple-light);line-height:1.6">';
   html += emoji + ' ' + tip;
@@ -3906,7 +3940,7 @@ function renderHomeIrregular(cont, det) {
            'Tus ciclos vienen variando últimamente. Si querés, marcá tu etapa en la sección Ciclo para que Luna se adapte del todo.</div>';
   }
   var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
-  html += '<div class="card-label">🌙 TU PIEL HOY</div>';
+  html += ctaRow('🌙 TU PIEL HOY');
   html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:2px">Tu ciclo tiene su propio ritmo 🌙</div>';
   html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5;margin-bottom:10px">Luna te cuida la piel sin fijarse en el día exacto.</div>';
   html += '<div style="padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--purple-light);line-height:1.6">';
@@ -3937,7 +3971,7 @@ function renderCicloHome() {
     if (sinEtapa && (edadQuiz === '40s' || edadQuiz === '50s')) {
       cont.innerHTML =
         '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">' +
-          '<div class="card-label">🌙 TU CICLO</div>' +
+          ctaRow('🌙 TU CICLO') +
           '<div style="font-size:14px;color:var(--cream);margin-bottom:4px">Contame cómo viene tu ciclo</div>' +
           '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Regular, variable o en una nueva etapa: elegilo y Luna adapta todo a vos, sin pedirte nada que no va con tu momento 🌸</div>' +
           '<div style="margin-top:10px;font-size:12px;color:var(--purple-light)">Elegir mi etapa →</div>' +
@@ -3946,7 +3980,7 @@ function renderCicloHome() {
     }
     cont.innerHTML =
       '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">' +
-        '<div class="card-label">🌙 TU CICLO</div>' +
+        ctaRow('🌙 TU CICLO') +
         '<div style="font-size:14px;color:var(--cream);margin-bottom:4px">Registrá tu período y Luna te acompaña</div>' +
         '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Vas a ver en qué fase estás y cuántos días faltan para el próximo, acá mismo cada día 🌸</div>' +
         '<div style="margin-top:10px;font-size:12px;color:var(--purple-light)">Registrar mi ciclo →</div>' +
@@ -3997,7 +4031,7 @@ function renderCicloHome() {
   var pct = Math.min(100, Math.round((s.diaActual / s.promCiclo) * 100));
 
   var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
-  html += '<div class="card-label">' + s.fase.emoji + ' TU CICLO</div>';
+  html += ctaRow(s.fase.emoji + ' TU CICLO');
   html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:2px">' + head + '</div>';
   html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5;margin-bottom:12px">' + sub + '</div>';
   if (!s.desactualizado) {
@@ -4110,8 +4144,8 @@ function renderSkinTrend() {
     }
   });
 
-  var html = '<div class="card">';
-  html += '<div class="card-label">🌙 TU PIEL EN ESTE CICLO</div>';
+  var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'skin\')">';
+  html += ctaRow('🌙 TU PIEL EN ESTE CICLO', 'Ver detalle');
   html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Cada punto es un día. Mirá cómo cambia tu piel a lo largo del ciclo 🌸</div>';
   html += '<div class="skintrend-dots">' + dotsHtml + '</div>';
   html += '<div class="skintrend-legend">' + legend + '</div>';
@@ -5061,16 +5095,51 @@ function renderEscudos() {
   cont.innerHTML = html;
 }
 
+// Acceso rápido a la rutina AM/PM: va a "Mi piel", muestra la rutina
+// pedida y hace scroll hasta los pasos. Si todavía no hizo la evaluación,
+// la deja en la pantalla que la invita a hacerla (sin romper nada).
+function quickRutina(t) {
+  goTab('skin');
+  setTimeout(function() {
+    if (!LS.get('skinResult')) return;
+    showRoutine(t);
+    var el = document.getElementById('routine-steps');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
+}
+
+// Pista de scroll de la home: se esconde apenas la usuaria scrollea
+// y no vuelve a aparecer en esta sesión (ya entendió que hay más abajo).
+var _hintVisto = false;
+function initScrollHint() {
+  var sc = document.getElementById('home-scroll');
+  var hint = document.getElementById('scroll-hint');
+  if (!sc || !hint || sc._hintListo) return;
+  sc._hintListo = true;
+  sc.addEventListener('scroll', function() {
+    if (sc.scrollTop > 40 && !_hintVisto) {
+      _hintVisto = true;
+      hint.classList.add('oculto');
+    }
+  }, { passive: true });
+}
+function refreshScrollHint() {
+  var hint = document.getElementById('scroll-hint');
+  if (hint && _hintVisto) hint.classList.add('oculto');
+  initScrollHint();
+}
+
 function goTab(tab) {
   const tabs = ['home','skin','ciclo','yo'];
   tabs.forEach(t => {
-    const btn = document.getElementById('nb-'+t);
+    const btn = document.getElementById('nav-'+t);
     if (btn) btn.classList.toggle('active', t===tab);
   });
   currentTab = tab;
   showScreen(tab);
   // Renderizar según tab
   if (tab==='home') {
+    refreshScrollHint();
     updateHomeGreeting();
     loadDailyTip();
     renderIngredienteDestacado();
