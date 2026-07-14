@@ -93,24 +93,6 @@ html[data-theme="dark"] #stars{display:block;opacity:.35}
 .nav-btn.active{color:var(--purple-light)}
 .nav-btn .nav-icon{font-size:17px;line-height:1;filter:grayscale(1);opacity:.6;transition:opacity .2s}
 .nav-btn.active .nav-icon{opacity:1}
-/* ─── UX Home v2: accesos rápidos, pila de cartas, pista de scroll y CTAs ─── */
-.quick-row{display:flex;justify-content:space-between;gap:4px;margin:2px 16px 14px}
-.quick-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent}
-.quick-ic{width:52px;height:52px;border-radius:50%;background:var(--purple);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(var(--accent-rgb),.35);transition:transform .15s}
-.quick-item:active .quick-ic{transform:scale(.9)}
-.quick-lbl{font-size:10px;font-weight:600;color:var(--purple-light);letter-spacing:.3px;text-align:center;line-height:1.25}
-#ciclo-home .card{position:relative;z-index:2;box-shadow:0 8px 22px rgba(45,42,36,.12)}
-html[data-theme="dark"] #ciclo-home .card{box-shadow:0 8px 22px rgba(0,0,0,.4)}
-#checkin-card{position:relative;z-index:1;margin-top:-26px;padding-top:36px}
-.scroll-hint{position:absolute;bottom:74px;left:0;right:0;z-index:9;display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none;transition:opacity .4s}
-.scroll-hint.oculto{opacity:0}
-.scroll-hint .hint-pill{background:var(--nav-bg);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;color:var(--purple-light);box-shadow:var(--shadow)}
-.scroll-hint .flechita{font-size:16px;line-height:1;color:var(--purple);animation:hintBounce 1.6s ease-in-out infinite}
-@keyframes hintBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
-.card-label-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.card-label-row .card-label{margin-bottom:0}
-.card-cta{font-size:11px;font-weight:700;color:var(--purple);white-space:nowrap;flex-shrink:0}
-.card-cta::after{content:' ›';font-size:14px;font-weight:700}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin:12px 16px;box-shadow:var(--shadow)}
 .card-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--cream-dim);margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .card-title{font-family:'DM Serif Display',serif;font-size:24px;font-weight:400;line-height:1.25;margin-bottom:8px}
@@ -184,6 +166,58 @@ select.input-field{appearance:none}
 #sc-home .scroll-inner{padding:16px 0 88px}
 .home-header{display:flex;align-items:center;justify-content:space-between;padding:18px 16px 8px}
 .home-logo{font-family:'DM Serif Display',serif;font-size:23px;font-weight:400;display:flex;align-items:center;gap:8px}
+/* ── Home estilo AURA ─────────────────────────── */
+.aura-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 14px}
+.aura-hello{font-family:'DM Serif Display',serif;font-size:24px;color:var(--cream);line-height:1.2}
+.aura-sub{font-size:12px;color:var(--cream-dim);margin-top:3px}
+.aura-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;color:var(--on-accent);background:linear-gradient(135deg,var(--pink),var(--purple));box-shadow:var(--shadow);cursor:pointer;font-family:'DM Serif Display',serif}
+.aura-rings{display:flex;gap:10px;padding:0 16px;margin-bottom:12px}
+.aura-ring-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:14px 8px 12px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;min-width:0}
+.aura-ring-card:active{transform:scale(.97)}
+.aura-ring-wrap{position:relative;width:96px;height:96px;margin:0 auto}
+.aura-ring-wrap svg{transform:rotate(-90deg);display:block}
+.aura-ring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 12px}
+.aura-ring-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream-dim)}
+.aura-ring-val{font-family:'DM Serif Display',serif;font-size:16px;color:var(--cream);line-height:1.15;margin-top:2px}
+.aura-ring-foot{font-size:10px;color:var(--cream-dim);margin-top:8px;line-height:1.3;padding:0 4px}
+.aura-ring-cta{font-size:10px;color:var(--purple-light);font-weight:600;margin-top:5px}
+.mc-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;margin:0 16px 12px;box-shadow:var(--shadow)}
+.mc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;cursor:pointer}
+.mc-title{font-size:14px;font-weight:600;color:var(--cream)}
+.mc-arrow{font-size:12px;color:var(--purple-light);font-weight:600}
+.mc-week{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.mc-week::-webkit-scrollbar{display:none}
+.mc-day{flex:1;min-width:38px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.mc-day-lbl{font-size:10px;color:var(--cream-dim);letter-spacing:.5px}
+.mc-day-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--cream);background:var(--surface2)}
+.mc-day.period .mc-day-num{background:rgba(var(--pink-rgb),.22);color:var(--pink);font-weight:600}
+.mc-day.pred .mc-day-num{background:transparent;border:1.5px dashed rgba(var(--pink-rgb),.55);color:var(--pink)}
+.mc-day.today .mc-day-num{background:var(--purple);color:var(--on-accent);font-weight:700;box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--purple)}
+.mc-chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.mc-chip{font-size:11px;color:var(--cream-dim);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 12px}
+.mc-chip strong{color:var(--purple-light);font-weight:600}
+.rut-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;margin:0 16px 12px;box-shadow:var(--shadow)}
+.rut-split{display:flex;gap:8px}
+.rut-col{flex:1;border-radius:16px;padding:12px;cursor:pointer;min-width:0}
+.rut-col.am{background:rgba(var(--gold-rgb),.10);border:1px solid rgba(var(--gold-rgb),.28)}
+.rut-col.pm{background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.22)}
+.rut-col-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--cream);margin-bottom:10px}
+.rut-step{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--cream-dim);line-height:1.35;margin-bottom:7px}
+.rut-step:last-child{margin-bottom:0}
+.rut-step-ico{font-size:13px;flex-shrink:0;filter:saturate(.7)}
+.rut-note{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--purple-light);line-height:1.5}
+.cn-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;margin:0 16px 12px;box-shadow:var(--shadow)}
+.cn-grid{display:flex;gap:8px;align-items:stretch}
+.cn-box{flex:1;border-radius:16px;padding:12px;min-width:0}
+.cn-consejo{background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.2)}
+.cn-notas{background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.25)}
+.cn-box-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream-dim);margin-bottom:6px}
+.cn-box-txt{font-size:11px;color:var(--cream);line-height:1.5}
+.cn-nota{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;font-size:11px;color:var(--cream);line-height:1.45;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px 8px;margin-bottom:6px}
+.cn-nota:last-child{margin-bottom:0}
+.cn-nota-x{background:none;border:none;color:var(--cream-dim);font-size:15px;line-height:1;cursor:pointer;padding:0 2px;flex-shrink:0}
+#fab-nota{position:absolute;right:16px;bottom:80px;width:54px;height:54px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--purple),var(--pink));color:var(--on-accent);font-size:30px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(45,42,36,.28);cursor:pointer;z-index:6;transition:transform .15s;padding:0 0 3px}
+#fab-nota:active{transform:scale(.92)}
 .checkin-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
 .checkin-btn{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px 10px;cursor:pointer;font-size:13px;font-weight:500;color:var(--cream);transition:all .2s;text-align:center;line-height:1.3}
 .checkin-btn:active,.checkin-btn.selected{border-color:var(--purple);background:rgba(var(--accent-rgb),.1);color:var(--purple-light)}
@@ -364,7 +398,7 @@ select.input-field{appearance:none}
 <div id="stars"></div>
 <div id="app">
 <div id="navbar">
-  <button class="nav-btn active" onclick="goTab('home')" id="nav-home"><span class="nav-icon">🌙</span>Hoy</button>
+  <button class="nav-btn active" onclick="goTab('home')" id="nav-home"><span class="nav-icon">🌙</span>Inicio</button>
   <button class="nav-btn" onclick="goTab('skin')" id="nav-skin"><span class="nav-icon">✨</span>Mi piel</button>
   <button class="nav-btn" onclick="goTab('ciclo')" id="nav-ciclo"><span class="nav-icon">🌸</span>Ciclo</button>
   <button class="nav-btn" onclick="goTab('yo')" id="nav-yo"><span class="nav-icon">👤</span>Yo</button>
@@ -430,22 +464,17 @@ select.input-field{appearance:none}
 </div>
 <div class="screen" id="sc-home">
   <div class="scroll-inner" id="home-scroll">
-    <div class="home-header">
-      <div class="home-logo">🌙 Luna</div>
-      <button class="btn btn-ghost" style="padding:8px 16px;font-size:13px" onclick="goTab('skin')">✨ Mi piel</button>
+    <div class="aura-header">
+      <div class="aura-header-txt">
+        <div class="aura-hello" id="home-greeting">Hola 🌸</div>
+        <div class="aura-sub" id="home-greeting-sub">Tu momento de cuidarte 🌸</div>
+      </div>
+      <div class="aura-avatar" id="home-avatar" onclick="goTab('yo')" title="Mi perfil">🌙</div>
     </div>
-    <div class="card">
-      <div class="card-label" id="home-time-label">🌙 HOLA</div>
-      <div class="card-title" id="home-greeting">Hola 🌸</div>
-      <div class="card-body" id="home-greeting-sub">Tu momento de cuidarte 🌸</div>
-    </div>
-    <div class="quick-row">
-      <button class="quick-item" onclick="goTab('glosario')"><span class="quick-ic">📖</span><span class="quick-lbl">Guía de<br>skincare</span></button>
-      <button class="quick-item" onclick="quickRutina('am')"><span class="quick-ic">🧴</span><span class="quick-lbl">Rutina<br>mañana</span></button>
-      <button class="quick-item" onclick="quickRutina('pm')"><span class="quick-ic">🌙</span><span class="quick-lbl">Rutina<br>noche</span></button>
-      <button class="quick-item" onclick="goTab('ciclo')"><span class="quick-ic">🩸</span><span class="quick-lbl">Consejos<br>hoy</span></button>
-    </div>
-    <div id="ciclo-home"></div>
+    <div id="home-widgets"></div>
+    <div id="home-miciclo"></div>
+    <div id="home-rutina"></div>
+    <div id="home-consejos"></div>
     <div class="card" id="checkin-card">
       <div class="card-label">🌿 CHECK-IN DIARIO</div>
       <div style="font-size:14px;margin-bottom:4px;color:var(--cream)">¿Cómo está tu piel hoy?</div>
@@ -478,13 +507,14 @@ select.input-field{appearance:none}
       </div>
       <div id="checkin-done" style="display:none;text-align:center;padding:10px 0"><div style="font-size:28px;margin-bottom:6px" id="checkin-done-emoji">✨</div><div style="font-size:13px;color:var(--purple-light);font-weight:500">Check-in registrado para hoy</div><div style="font-size:12px;color:var(--cream-dim);margin-top:6px;line-height:1.5" id="checkin-done-msg">Volvé mañana para seguir tu racha 🌙</div></div>
     </div>
-    <div id="skin-trend-home"></div>
     <div class="streak-row">
       <div class="streak-item"><div class="streak-val" id="streak-days">0</div><div class="streak-lbl">Días seguidos</div></div>
       <div class="streak-item"><div class="streak-val" id="streak-total">0</div><div class="streak-lbl">Check-ins</div></div>
       <div class="streak-item"><div class="streak-val" id="streak-phase">—</div><div class="streak-lbl">Luna</div></div>
     </div>
     <div id="sistema-rachas"></div>
+    <div id="ciclo-home"></div>
+    <div id="skin-trend-home"></div>
     <div id="insight-temprano"></div>
     <div style="margin:0 16px 12px;display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px">
       <span style="font-size:18px;flex-shrink:0">🌠</span>
@@ -512,10 +542,7 @@ select.input-field{appearance:none}
       <div id="luna-mensaje-texto" style="font-size:14px;color:var(--cream);line-height:1.6"></div>
     </div>
   </div>
-  <div class="scroll-hint" id="scroll-hint">
-    <div class="hint-pill">Seguí bajando para ver más 🌿</div>
-    <div class="flechita">⌄</div>
-  </div>
+  <button id="fab-nota" onclick="openNotaRapida()" aria-label="Agregar nota rápida">+</button>
 </div>
 <div class="screen" id="sc-skin">
   <div class="scroll-inner">
@@ -859,6 +886,15 @@ select.input-field{appearance:none}
     <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="closeModal('modal-diario-add')">Cancelar</button>
   </div>
 </div>
+<div class="modal-overlay" id="modal-nota-rapida">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📝 Nota rápida de hoy</div>
+    <textarea id="nota-rapida-txt" class="input-field" rows="3" maxlength="200" placeholder="Ej: hoy la piel amaneció más seca, tomé más agua…" style="resize:none;width:100%;font-family:inherit"></textarea>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="guardarNotaRapida()">Guardar nota 🌸</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="closeModal('modal-nota-rapida')">Cancelar</button>
+  </div>
+</div>
 <div class="modal-overlay" id="modal-privacy">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -1112,7 +1148,7 @@ async function loadFromCloud(userId) {
       var data = snap.data();
       var keys = ['profile', 'skinResult', 'ciclo', 'cicloHistorial', 'checkins',
                   'checkinDates', 'diario', 'escudos', 'mejorRacha', 'cicloIrregular',
-                  'notifConfig', 'logrosVistos', 'etapaCiclo', 'sintomasDiario'];
+                  'notifConfig', 'logrosVistos', 'etapaCiclo', 'sintomasDiario', 'notasRapidas'];
       for (var i = 0; i < keys.length; i++) {
         var k = keys[i];
         if (data[k] !== undefined) {
@@ -1131,7 +1167,7 @@ async function loadFromCloud(userId) {
 var SYNC_KEYS = ['profile', 'skinResult', 'ciclo', 'cicloHistorial',
                  'checkins', 'checkinDates', 'diario', 'escudos',
                  'mejorRacha', 'cicloIrregular', 'logrosVistos', 'etapaCiclo',
-                 'sintomasDiario'];
+                 'sintomasDiario', 'notasRapidas'];
 
 // Wrapper LS mejorado con sincronización
 const LS = {
@@ -3686,7 +3722,10 @@ function updateHomeGreeting() {
   }
 
   var el = document.getElementById('home-greeting');
-  if (el) el.textContent = saludo + (name ? ', ' + name : '') + ' 🌙';
+  if (el) el.textContent = saludo + (name ? ', ' + name : '') + ' ' + emoji;
+
+  var avaEl = document.getElementById('home-avatar');
+  if (avaEl) avaEl.textContent = name ? name.charAt(0).toUpperCase() : '🌙';
 
   var labelEl = document.getElementById('home-time-label');
   if (labelEl) labelEl.textContent = emoji + ' ' + label;
@@ -3893,12 +3932,6 @@ var HOME_MENO_ROTACION = [
   { t: 'Luz de día, reparación de noche', e: '✨', tip: 'Vitamina C a la mañana para la luminosidad, y de noche una crema nutritiva para que la piel se recupere mientras dormís.' }
 ];
 
-// Fila de etiqueta + CTA "Ver más ›" para las cards cliqueables de la home.
-// Hace evidente que tocar la card abre otra pantalla.
-function ctaRow(label, cta) {
-  return '<div class="card-label-row"><div class="card-label">' + label + '</div><div class="card-cta">' + (cta || 'Ver más') + '</div></div>';
-}
-
 function renderHomeMenopausia(cont, det) {
   var hoy = new Date();
   var diaAnio = Math.floor((hoy - new Date(hoy.getFullYear(), 0, 0)) / 86400000);
@@ -3923,7 +3956,7 @@ function renderHomeMenopausia(cont, det) {
     cta = 'Contame cómo te sentís hoy →';
   }
   var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
-  html += ctaRow('🌙 TU CUIDADO HOY');
+  html += '<div class="card-label">🌙 TU CUIDADO HOY</div>';
   html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:10px">' + titulo + '</div>';
   html += '<div style="padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--purple-light);line-height:1.6">';
   html += emoji + ' ' + tip;
@@ -3940,7 +3973,7 @@ function renderHomeIrregular(cont, det) {
            'Tus ciclos vienen variando últimamente. Si querés, marcá tu etapa en la sección Ciclo para que Luna se adapte del todo.</div>';
   }
   var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
-  html += ctaRow('🌙 TU PIEL HOY');
+  html += '<div class="card-label">🌙 TU PIEL HOY</div>';
   html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:2px">Tu ciclo tiene su propio ritmo 🌙</div>';
   html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5;margin-bottom:10px">Luna te cuida la piel sin fijarse en el día exacto.</div>';
   html += '<div style="padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--purple-light);line-height:1.6">';
@@ -3971,7 +4004,7 @@ function renderCicloHome() {
     if (sinEtapa && (edadQuiz === '40s' || edadQuiz === '50s')) {
       cont.innerHTML =
         '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">' +
-          ctaRow('🌙 TU CICLO') +
+          '<div class="card-label">🌙 TU CICLO</div>' +
           '<div style="font-size:14px;color:var(--cream);margin-bottom:4px">Contame cómo viene tu ciclo</div>' +
           '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Regular, variable o en una nueva etapa: elegilo y Luna adapta todo a vos, sin pedirte nada que no va con tu momento 🌸</div>' +
           '<div style="margin-top:10px;font-size:12px;color:var(--purple-light)">Elegir mi etapa →</div>' +
@@ -3980,7 +4013,7 @@ function renderCicloHome() {
     }
     cont.innerHTML =
       '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">' +
-        ctaRow('🌙 TU CICLO') +
+        '<div class="card-label">🌙 TU CICLO</div>' +
         '<div style="font-size:14px;color:var(--cream);margin-bottom:4px">Registrá tu período y Luna te acompaña</div>' +
         '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Vas a ver en qué fase estás y cuántos días faltan para el próximo, acá mismo cada día 🌸</div>' +
         '<div style="margin-top:10px;font-size:12px;color:var(--purple-light)">Registrar mi ciclo →</div>' +
@@ -4031,7 +4064,7 @@ function renderCicloHome() {
   var pct = Math.min(100, Math.round((s.diaActual / s.promCiclo) * 100));
 
   var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'ciclo\')">';
-  html += ctaRow(s.fase.emoji + ' TU CICLO');
+  html += '<div class="card-label">' + s.fase.emoji + ' TU CICLO</div>';
   html += '<div style="font-size:18px;color:var(--cream);font-weight:500;margin-bottom:2px">' + head + '</div>';
   html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5;margin-bottom:12px">' + sub + '</div>';
   if (!s.desactualizado) {
@@ -4085,6 +4118,312 @@ function getAnticipacionFase(s) {
     return (s.diasHasta === 1 ? 'Mañana' : ('En ' + s.diasHasta + ' días')) + ' arranca un ciclo nuevo 🌑 — buen momento para volver a la calma.';
   }
   return '';
+}
+
+// ═══ HOME ESTILO AURA: círculos, semana, rutina AM/PM y notas rápidas ═══
+// Todo este bloque solo LEE de calcularCicloStats() y detectarEtapaVital():
+// no recalcula nada del ciclo, para que la lógica viva en un solo lugar.
+// La etapa vital manda siempre (mismo principio que renderCicloHome):
+// en Nueva etapa jamás se muestran días de ciclo ni flujo.
+
+function renderHomeAura() {
+  renderHomeWidgets();
+  renderMiCicloSemana();
+  renderHomeRutina();
+  renderHomeConsejos();
+}
+
+// Anillo SVG de progreso (pct 0..1)
+function auraRing(pct, color, lbl, val, foot) {
+  var R = 42, C = 2 * Math.PI * R;
+  var off = C * (1 - Math.max(0, Math.min(1, pct)));
+  return '<div class="aura-ring-wrap">' +
+    '<svg width="96" height="96" viewBox="0 0 96 96">' +
+      '<circle cx="48" cy="48" r="' + R + '" fill="none" stroke="var(--surface2)" stroke-width="7"/>' +
+      '<circle cx="48" cy="48" r="' + R + '" fill="none" stroke="' + color + '" stroke-width="7" stroke-linecap="round" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"/>' +
+    '</svg>' +
+    '<div class="aura-ring-txt"><div class="aura-ring-lbl">' + lbl + '</div><div class="aura-ring-val">' + val + '</div></div>' +
+  '</div>' + (foot ? '<div class="aura-ring-foot">' + foot + '</div>' : '');
+}
+
+function renderHomeWidgets() {
+  var cont = document.getElementById('home-widgets');
+  if (!cont) return;
+  var det = detectarEtapaVital();
+  var s = calcularCicloStats();
+
+  // ── Círculo CICLO ──
+  var cicloHTML;
+  if (det.etapa === 'menopausia') {
+    cicloHTML = auraRing(1, 'var(--gold)', 'Etapa', 'Nueva 🌙', 'Luna se adapta a vos');
+  } else if (det.etapa === 'irregular') {
+    var dd = (typeof det.diasDesde === 'number') ? det.diasDesde : null;
+    cicloHTML = auraRing(0.5, 'var(--pink)', 'Ciclo', 'Variable',
+      dd !== null ? ('Día ' + (dd + 1) + ' desde el último') : 'Registrá cuando llegue');
+  } else if (s && !s.desactualizado) {
+    var pct = Math.min(1, s.diaActual / s.promCiclo);
+    var foot;
+    if (s.enPeriodo) foot = '🩸 En tu período';
+    else if (s.atrasada) { var dR = Math.abs(s.diasHasta); foot = 'Atrasado ' + dR + (dR === 1 ? ' día' : ' días'); }
+    else if (s.diasHasta === 0) foot = 'Podría llegar hoy 🩸';
+    else foot = 'Próximo en ' + s.diasHasta + (s.diasHasta === 1 ? ' día' : ' días') + (s.estimado ? ' (est.)' : '');
+    cicloHTML = auraRing(pct, 'var(--pink)', 'Ciclo', 'Día ' + s.diaActual, foot);
+  } else if (s && s.desactualizado) {
+    cicloHTML = auraRing(0, 'var(--pink)', 'Ciclo', 'Actualizar', 'Registrá tu último período');
+  } else {
+    cicloHTML = auraRing(0, 'var(--pink)', 'Ciclo', 'Registrar', 'Tocá para empezar 🌸');
+  }
+
+  // ── Círculo PIEL: check-in de hoy > piel según fase > tipo de piel ──
+  var SKIN_CORTO = { normal:'Normal', dry:'Seca', oily:'Grasa', combo:'Mixta', sensitive:'Sensible', acne:'Acneica' };
+  var result = LS.get('skinResult');
+  var checkins = LS.get('checkins') || {};
+  var hoyCk = checkins[new Date().toDateString()];
+  var pielVal, pielFoot;
+  if (hoyCk && SKIN_COLORS[hoyCk.skin]) {
+    pielVal = SKIN_COLORS[hoyCk.skin].label;
+    pielFoot = 'Tu check-in de hoy ' + SKIN_COLORS[hoyCk.skin].emoji;
+  } else if (det.etapa === 'regular' && s && !s.atrasada && !s.desactualizado && s.fase) {
+    var mapa = { 'Menstrual 🩸':'Sensible', 'Folicular 🌱':'En calma', 'Ovulación ✨':'Luminosa', 'Lútea 🍂':'Reactiva' };
+    pielVal = mapa[s.fase.name] || 'Tu piel';
+    pielFoot = 'Fase ' + s.fase.name;
+  } else if (result && SKIN_CORTO[result.type]) {
+    pielVal = SKIN_CORTO[result.type];
+    pielFoot = 'Tu tipo de piel ✨';
+  } else {
+    pielVal = 'Descubrila';
+    pielFoot = 'Hacé tu evaluación →';
+  }
+  // El anillo de piel avanza con tus check-ins hacia la próxima luna (28)
+  var totalCk = Object.keys(checkins).length;
+  var pctPiel = totalCk ? ((totalCk % 28) || 28) / 28 : 0;
+  var pielHTML = auraRing(pctPiel, 'var(--success)', 'Piel', pielVal, pielFoot);
+
+  cont.innerHTML =
+    '<div class="aura-rings">' +
+      '<div class="aura-ring-card" onclick="goTab(\'ciclo\')">' + cicloHTML + '<div class="aura-ring-cta">Ver ciclo →</div></div>' +
+      '<div class="aura-ring-card" onclick="goTab(\'skin\')">' + pielHTML + '<div class="aura-ring-cta">Ver mi piel →</div></div>' +
+    '</div>';
+}
+
+function renderMiCicloSemana() {
+  var cont = document.getElementById('home-miciclo');
+  if (!cont) return;
+  var det = detectarEtapaVital();
+  var s = calcularCicloStats();
+  var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+
+  // Semana actual (lunes a domingo, hora local)
+  var dow = (hoy.getDay() + 6) % 7; // 0 = lunes
+  var lunes = new Date(hoy); lunes.setDate(hoy.getDate() - dow);
+  var lbls = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+
+  // Ventanas de período (solo etapa regular con datos al día):
+  // • actual: desde el último inicio, con el fin real si lo marcó
+  //   o su duración promedio real (promPeriodo) si no.
+  // • previsto: desde la fecha estimada (prox), mismo largo, punteado.
+  var perIni = null, perFin = null, predIni = null, predFin = null;
+  if (det.etapa === 'regular' && s && !s.desactualizado) {
+    var ciclo = LS.get('ciclo') || {};
+    if (ciclo.start) {
+      perIni = new Date(ciclo.start); perIni.setHours(0, 0, 0, 0);
+      if (ciclo.end) { perFin = new Date(ciclo.end); perFin.setHours(0, 0, 0, 0); }
+      else { perFin = new Date(perIni); perFin.setDate(perIni.getDate() + s.promPeriodo - 1); }
+    }
+    if (!s.atrasada && s.prox) {
+      predIni = new Date(s.prox); predIni.setHours(0, 0, 0, 0);
+      predFin = new Date(predIni); predFin.setDate(predIni.getDate() + s.promPeriodo - 1);
+    }
+  }
+
+  var diasHTML = '';
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(lunes); d.setDate(lunes.getDate() + i);
+    var cls = 'mc-day';
+    if (perIni && d >= perIni && d <= perFin) cls += ' period';
+    else if (predIni && d >= predIni && d <= predFin) cls += ' pred';
+    if (d.getTime() === hoy.getTime()) cls += ' today';
+    diasHTML += '<div class="' + cls + '"><div class="mc-day-lbl">' + lbls[i] + '</div><div class="mc-day-num">' + d.getDate() + '</div></div>';
+  }
+
+  // Chips: flujo (o síntomas en Nueva etapa) + ánimo de hoy
+  var chips = '';
+  var titulo = '🌸 Mi ciclo';
+  if (det.etapa === 'menopausia') {
+    titulo = '🌙 Mi etapa';
+    var symsM = sintomasDeHoy();
+    chips += '<div class="mc-chip">Síntomas hoy: <strong>' + (symsM.length ? symsM.length : 'sin registrar') + '</strong></div>';
+  } else {
+    var flujo = 'Sin flujo';
+    if (s && !s.desactualizado) {
+      if (s.enPeriodo) flujo = 'En período 🩸';
+      else if (s.atrasada) flujo = 'Atrasado';
+      else if (s.diasHasta === 0) flujo = 'Podría llegar hoy';
+    } else if (!s) flujo = 'Sin registrar';
+    chips += '<div class="mc-chip">Flujo: <strong>' + flujo + '</strong></div>';
+  }
+  chips += '<div class="mc-chip">Ánimo: <strong>' + animoDeHoy() + '</strong></div>';
+
+  cont.innerHTML =
+    '<div class="mc-card">' +
+      '<div class="mc-head" onclick="goTab(\'ciclo\')"><div class="mc-title">' + titulo + '</div><div class="mc-arrow">Ver más ›</div></div>' +
+      '<div class="mc-week">' + diasHTML + '</div>' +
+      '<div class="mc-chips">' + chips + '</div>' +
+    '</div>';
+}
+
+// Ánimo de hoy a partir de los síntomas registrados (buenos vs. molestias)
+function animoDeHoy() {
+  var syms = sintomasDeHoy();
+  if (!syms.length) return 'Sin registrar';
+  var buenos = 0, molestias = 0;
+  syms.forEach(function (n) {
+    if (SYMPTOMS_GOOD.some(function (g) { return g.text === n; })) buenos++;
+    else molestias++;
+  });
+  if (buenos && !molestias) return 'Positivo 😊';
+  if (molestias && !buenos) return 'Sensible 💜';
+  return 'Mixto 🌗';
+}
+
+// Nombre corto e ícono para los pasos de la rutina en las columnas AM/PM
+function rutCorto(paso) {
+  var t = paso.split('(')[0];
+  [' con ', ' sin ', ' o ', ':', ' — '].forEach(function (sep) {
+    var ix = t.indexOf(sep);
+    if (ix > 3) t = t.slice(0, ix);
+  });
+  t = t.trim();
+  return t.length > 26 ? t.slice(0, 24).trim() + '…' : t;
+}
+function rutIcono(paso) {
+  var p = paso.toLowerCase();
+  if (p.indexOf('doble limpieza') >= 0) return '🫧';
+  if (p.indexOf('limpiador') >= 0 || p.indexOf('limpieza') >= 0) return '🧼';
+  if (p.indexOf('spf') >= 0 || p.indexOf('protector') >= 0) return '☀️';
+  if (p.indexOf('retinol') >= 0) return '🌙';
+  if (p.indexOf('tónico') >= 0 || p.indexOf('esencia') >= 0) return '💧';
+  if (p.indexOf('sérum') >= 0) return '✨';
+  if (p.indexOf('crema') >= 0 || p.indexOf('hidratante') >= 0) return '🧴';
+  return '🌸';
+}
+
+function renderHomeRutina() {
+  var cont = document.getElementById('home-rutina');
+  if (!cont) return;
+  var result = LS.get('skinResult');
+  if (!result) {
+    cont.innerHTML =
+      '<div class="rut-card" style="cursor:pointer" onclick="goTab(\'skin\')">' +
+        '<div class="mc-head" style="margin-bottom:6px"><div class="mc-title">✨ Tu rutina de skincare</div><div class="mc-arrow">›</div></div>' +
+        '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Hacé tu evaluación de piel y Luna arma tu rutina de mañana y de noche, a tu medida 🌸</div>' +
+        '<div style="margin-top:8px;font-size:12px;color:var(--purple-light);font-weight:600">Empezar evaluación →</div>' +
+      '</div>';
+    return;
+  }
+  var route = ROUTINES[result.type] || ROUTINES.normal;
+  function col(steps) {
+    return steps.slice(0, 4).map(function (p) {
+      return '<div class="rut-step"><span class="rut-step-ico">' + rutIcono(p) + '</span><span>' + rutCorto(p) + '</span></div>';
+    }).join('');
+  }
+  // Nota del día según fase o etapa (misma línea de piel que usa la home del ciclo)
+  var s = calcularCicloStats();
+  var det = detectarEtapaVital();
+  var nota;
+  if (det.etapa === 'menopausia') {
+    nota = 'Hoy: nutrición, firmeza y SPF — los tres aliados de tu piel en esta etapa 💜';
+  } else if (det.etapa === 'regular' && s && !s.atrasada && !s.desactualizado && s.fase) {
+    var pielFase = {
+      'Menstrual 🩸': 'Hoy: piel más seca o sensible. Priorizá hidratación suave.',
+      'Folicular 🌱': 'Hoy: tu piel mejora y tolera mejor activos nuevos.',
+      'Ovulación ✨': 'Hoy: piel en su mejor momento, luminosa y pareja.',
+      'Lútea 🍂': 'Hoy: puede aparecer grasa o algún granito. Es normal, sumá calma.'
+    };
+    nota = pielFase[s.fase.name] || 'Constancia > cantidad: tu rutina simple, todos los días 🌸';
+  } else {
+    nota = 'Constancia > cantidad: tu rutina simple, todos los días 🌸';
+  }
+  cont.innerHTML =
+    '<div class="rut-card">' +
+      '<div class="mc-head" onclick="goTab(\'skin\')"><div class="mc-title">✨ Tu rutina de skincare</div><div class="mc-arrow">Ver más ›</div></div>' +
+      '<div class="rut-split">' +
+        '<div class="rut-col am" onclick="goTab(\'skin\')"><div class="rut-col-head"><span>Mañana</span><span>☀️</span></div>' + col(route.am || []) + '</div>' +
+        '<div class="rut-col pm" onclick="goTab(\'skin\')"><div class="rut-col-head"><span>Noche</span><span>🌙</span></div>' + col(route.pm || []) + '</div>' +
+      '</div>' +
+      '<div class="rut-note">💡 ' + nota + '</div>' +
+    '</div>';
+}
+
+// ── Consejos y notas rápidas (FAB +) ──
+function consejoDeHoy() {
+  var det = detectarEtapaVital();
+  if (det.etapa === 'menopausia') {
+    var t = BIENESTAR_MENO_GENERAL[new Date().getDate() % BIENESTAR_MENO_GENERAL.length];
+    return t.e + ' ' + t.t;
+  }
+  var s = calcularCicloStats();
+  var idx = (det.etapa === 'regular' && s && !s.atrasada && s.fase) ? PHASES.indexOf(s.fase) : -1;
+  var items = BIENESTAR_POR_FASE[idx];
+  if (!items) return '💧 Tomá agua durante el día y regalate un momento para vos 🌸';
+  var it = items[new Date().getDate() % items.length];
+  return it.e + ' ' + it.t;
+}
+
+function notasDeHoy() {
+  var notas = LS.get('notasRapidas') || [];
+  var hoy = isoLocalHoy();
+  return notas.filter(function (n) { return n.fecha === hoy; });
+}
+
+function renderHomeConsejos() {
+  var cont = document.getElementById('home-consejos');
+  if (!cont) return;
+  var notas = notasDeHoy();
+  var notasHTML;
+  if (notas.length) {
+    notasHTML = notas.slice(-3).map(function (n) {
+      return '<div class="cn-nota"><span>' + escHTML(n.text) + '</span>' +
+        '<button class="cn-nota-x" onclick="borrarNotaRapida(' + n.ts + ')" aria-label="Borrar nota">×</button></div>';
+    }).join('');
+  } else {
+    notasHTML = '<div style="font-size:11px;color:var(--cream-dim);line-height:1.5">Todavía no anotaste nada hoy. Tocá el <strong style="color:var(--purple-light)">+</strong> y dejá una nota rápida 🌸</div>';
+  }
+  cont.innerHTML =
+    '<div class="cn-card">' +
+      '<div class="mc-head" style="cursor:default;margin-bottom:10px"><div class="mc-title">📝 Consejos y notas</div></div>' +
+      '<div class="cn-grid">' +
+        '<div class="cn-box cn-consejo"><div class="cn-box-lbl">Consejo de hoy</div><div class="cn-box-txt">' + consejoDeHoy() + '</div></div>' +
+        '<div class="cn-box cn-notas"><div class="cn-box-lbl">Tus notas de hoy</div>' + notasHTML + '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function openNotaRapida() {
+  var inp = document.getElementById('nota-rapida-txt');
+  if (inp) inp.value = '';
+  openModal('modal-nota-rapida');
+  if (inp) setTimeout(function () { inp.focus(); }, 250);
+}
+
+function guardarNotaRapida() {
+  var inp = document.getElementById('nota-rapida-txt');
+  if (!inp) return;
+  var txt = inp.value.trim();
+  if (!txt) { showToast('Escribí algo cortito primero 🌸'); return; }
+  var notas = LS.get('notasRapidas') || [];
+  notas.push({ ts: Date.now(), fecha: isoLocalHoy(), text: txt.slice(0, 200) });
+  if (notas.length > 120) notas = notas.slice(-120); // que no crezca sin límite
+  LS.set('notasRapidas', notas);
+  closeModal('modal-nota-rapida');
+  renderHomeConsejos();
+  showToast('Nota guardada 📝');
+}
+
+function borrarNotaRapida(ts) {
+  var notas = (LS.get('notasRapidas') || []).filter(function (n) { return n.ts !== ts; });
+  LS.set('notasRapidas', notas);
+  renderHomeConsejos();
 }
 
 // ─── Mini-tendencia de piel del ciclo actual ─────────────────
@@ -4144,8 +4483,8 @@ function renderSkinTrend() {
     }
   });
 
-  var html = '<div class="card" style="cursor:pointer" onclick="goTab(\'skin\')">';
-  html += ctaRow('🌙 TU PIEL EN ESTE CICLO', 'Ver detalle');
+  var html = '<div class="card">';
+  html += '<div class="card-label">🌙 TU PIEL EN ESTE CICLO</div>';
   html += '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Cada punto es un día. Mirá cómo cambia tu piel a lo largo del ciclo 🌸</div>';
   html += '<div class="skintrend-dots">' + dotsHtml + '</div>';
   html += '<div class="skintrend-legend">' + legend + '</div>';
@@ -5095,51 +5434,16 @@ function renderEscudos() {
   cont.innerHTML = html;
 }
 
-// Acceso rápido a la rutina AM/PM: va a "Mi piel", muestra la rutina
-// pedida y hace scroll hasta los pasos. Si todavía no hizo la evaluación,
-// la deja en la pantalla que la invita a hacerla (sin romper nada).
-function quickRutina(t) {
-  goTab('skin');
-  setTimeout(function() {
-    if (!LS.get('skinResult')) return;
-    showRoutine(t);
-    var el = document.getElementById('routine-steps');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 80);
-}
-
-// Pista de scroll de la home: se esconde apenas la usuaria scrollea
-// y no vuelve a aparecer en esta sesión (ya entendió que hay más abajo).
-var _hintVisto = false;
-function initScrollHint() {
-  var sc = document.getElementById('home-scroll');
-  var hint = document.getElementById('scroll-hint');
-  if (!sc || !hint || sc._hintListo) return;
-  sc._hintListo = true;
-  sc.addEventListener('scroll', function() {
-    if (sc.scrollTop > 40 && !_hintVisto) {
-      _hintVisto = true;
-      hint.classList.add('oculto');
-    }
-  }, { passive: true });
-}
-function refreshScrollHint() {
-  var hint = document.getElementById('scroll-hint');
-  if (hint && _hintVisto) hint.classList.add('oculto');
-  initScrollHint();
-}
-
 function goTab(tab) {
   const tabs = ['home','skin','ciclo','yo'];
   tabs.forEach(t => {
-    const btn = document.getElementById('nav-'+t);
+    const btn = document.getElementById('nb-'+t);
     if (btn) btn.classList.toggle('active', t===tab);
   });
   currentTab = tab;
   showScreen(tab);
   // Renderizar según tab
   if (tab==='home') {
-    refreshScrollHint();
     updateHomeGreeting();
     loadDailyTip();
     renderIngredienteDestacado();
@@ -5148,6 +5452,7 @@ function goTab(tab) {
     renderLogros();
     renderResumenSemanal();
     checkNudge();
+    renderHomeAura();
     // Check-in de hoy
     const checkins = LS.get('checkins') || {};
     const todayDone = checkins[new Date().toDateString()];
