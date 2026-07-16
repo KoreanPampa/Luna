@@ -164,6 +164,11 @@ select.input-field{appearance:none}
 .quiz-save-later-btn{font-size:12px;color:var(--cream-dim);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .quiz-nav{display:flex;gap:10px;padding:0 20px 20px;flex-shrink:0}
 #sc-home .scroll-inner{padding:16px 0 88px}
+#home-scroll-hint{position:absolute;left:50%;bottom:98px;transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;opacity:0;transition:opacity .35s ease}
+#home-scroll-hint.show{opacity:1}
+#home-scroll-hint .hint-txt{font-size:10px;letter-spacing:.5px;color:var(--cream-dim);background:rgba(var(--accent-rgb),.12);border:1px solid rgba(var(--accent-rgb),.28);border-radius:12px;padding:3px 10px}
+#home-scroll-hint .hint-arrow{font-size:18px;line-height:1;color:var(--purple-light);background:rgba(var(--accent-rgb),.12);border:1px solid rgba(var(--accent-rgb),.28);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;animation:scrollHintBounce 1.8s ease-in-out infinite}
+@keyframes scrollHintBounce{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(4px);opacity:1}}
 .home-header{display:flex;align-items:center;justify-content:space-between;padding:18px 16px 8px}
 .home-logo{font-family:'DM Serif Display',serif;font-size:23px;font-weight:400;display:flex;align-items:center;gap:8px}
 /* ── Home estilo AURA ─────────────────────────── */
@@ -192,6 +197,8 @@ select.input-field{appearance:none}
 .mc-week-lbl{font-size:11px;color:var(--cream-dim);letter-spacing:.5px;text-align:center;flex:1}
 .mc-hoy-chip{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:10px;background:rgba(var(--accent-rgb),.15);border:1px solid rgba(var(--accent-rgb),.35);color:var(--purple-light);font-size:10px;font-weight:600;cursor:pointer}
 .mc-week::-webkit-scrollbar{display:none}
+.mc-nav-btn.mc-pulse{animation:mcNavPulse 2.2s ease-in-out infinite}
+@keyframes mcNavPulse{0%,100%{transform:translateX(0);opacity:.55}50%{transform:translateX(2px);opacity:1}}
 .mc-day{flex:1;min-width:38px;display:flex;flex-direction:column;align-items:center;gap:5px}
 .mc-day-lbl{font-size:10px;color:var(--cream-dim);letter-spacing:.5px}
 .mc-day-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--cream);background:var(--surface2)}
@@ -445,7 +452,7 @@ select.input-field{appearance:none}
     <div style="background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.25);border-radius:14px;padding:14px;margin-bottom:16px;font-size:12px;color:var(--cream-dim);line-height:1.6">⚕️ <strong style="color:var(--cream)">Aviso importante:</strong> Luna ofrece recomendaciones de carácter estrictamente cosmético y orientativo. Esta herramienta no constituye, reemplaza ni simula un diagnóstico, asesoramiento o tratamiento médico o dermatológico. Ante cualquier duda o condición preexistente en la piel, consultá a un médico matriculado.</div>
     <div class="checkbox-row"><input type="checkbox" id="obCheck1"><label for="obCheck1">Leí y acepto los <a onclick="openModal('modal-terms')">Términos y Condiciones</a></label></div>
     <div class="checkbox-row"><input type="checkbox" id="obCheck2"><label for="obCheck2">Leí y acepto la <a onclick="openModal('modal-privacy')">Política de Privacidad</a></label></div>
-    <div class="checkbox-row"><input type="checkbox" id="obCheck3"><label for="obCheck3">Entiendo que Luna brinda consejos cosméticos orientativos y <strong>no reemplaza la consulta médica o dermatológica</strong></label></div>
+    <div class="checkbox-row"><input type="checkbox" id="obCheck3"><label for="obCheck3">Entiendo que Luna brinda consejos cosméticos y de bienestar orientativos y <strong>no reemplaza la consulta médica, dermatológica o nutricional</strong></label></div>
     <div style="margin-top:16px;width:100%"><button class="btn btn-primary btn-full" onclick="obFinish()">Empezar mi evaluación cosmética 🌙</button></div>
   </div>
 </div>
@@ -468,6 +475,7 @@ select.input-field{appearance:none}
   </div>
 </div>
 <div class="screen" id="sc-home">
+  <div id="home-scroll-hint"><span class="hint-arrow">⌄</span></div>
   <div class="scroll-inner" id="home-scroll">
     <div class="aura-header">
       <div class="aura-header-txt">
@@ -968,7 +976,7 @@ select.input-field{appearance:none}
       <h4>1. Aceptación de los Términos</h4>
       <p>Al acceder o usar Luna aceptás estos Términos y Condiciones, junto con la <a onclick="closeModal('modal-terms');openModal('modal-privacy')">Política de Privacidad</a> y el <a onclick="closeModal('modal-terms');openModal('modal-medical')">Aviso Médico</a>, que forman parte integral de este acuerdo. Si no estás de acuerdo, no uses la aplicación.</p>
       <h4>2. Naturaleza del servicio — Herramienta cosmética orientativa</h4>
-      <p>Luna es una herramienta digital de orientación cosmética. Las recomendaciones que brinda son de carácter <strong>estrictamente cosmético e informativo</strong> y están basadas en las preferencias y características indicadas por la usuaria.</p>
+      <p>Luna es una herramienta digital de orientación cosmética. Las recomendaciones que brinda son de carácter <strong>estrictamente cosmético e informativo</strong> y están basadas en las preferencias y características indicadas por la usuaria. Luna también ofrece sugerencias generales de bienestar y hábitos de alimentación basadas en alimentos comunes, con fines exclusivamente educativos. Estas sugerencias no constituyen asesoramiento médico ni nutricional profesional.</p>
       <p style="margin-top:8px"><strong style="color:var(--pink)">Luna NO constituye, reemplaza ni simula un diagnóstico, asesoramiento, tratamiento ni prescripción médica o dermatológica de ningún tipo.</strong> Ante cualquier duda sobre condiciones de la piel, se recomienda consultar a un médico matriculado.</p>
       <p style="margin-top:8px">Esta aplicación no está habilitada para el ejercicio de la medicina ni de ninguna profesión de la salud conforme a la Ley 17.132 y normativa provincial concordante.</p>
       <h4>3. Elegibilidad y acceso</h4>
@@ -1008,7 +1016,9 @@ select.input-field{appearance:none}
       <p>Consultá a un dermatólogo si tenés: acné severo o quístico, eccema, psoriasis, rosácea, manchas de aparición reciente, reacciones alérgicas, heridas que no cicatrizan, o cualquier condición de piel que te preocupe.</p>
       <h4>Reacciones adversas</h4>
       <p>Si al usar un producto cosmético experimentás ardor intenso, hinchazón, urticaria o cualquier reacción inesperada, suspendé su uso de inmediato y consultá a un médico.</p>
-      <p style="margin-top:12px;font-size:11px;color:var(--cream-dim)">Versión 1.0 · Junio 2026 · Luna App — KoreanPampa, General Acha, La Pampa, Argentina</p>
+      <h4>Sugerencias de bienestar y alimentación</h4>
+      <p>Luna también incluye sugerencias generales de bienestar y alimentación basadas en alimentos comunes. Son de carácter educativo, no consideran alergias, intolerancias, medicaciones ni condiciones de salud individuales, y no reemplazan la consulta con una médica o nutricionista matriculada.</p>
+      <p style="margin-top:12px;font-size:11px;color:var(--cream-dim)">Versión 1.1 · Julio 2026 · Luna App — KoreanPampa, General Acha, La Pampa, Argentina</p>
     </div>
     <button class="btn btn-ghost btn-full" style="margin-top:16px" onclick="closeModal('modal-medical')">Entendido</button>
   </div>
@@ -4402,7 +4412,7 @@ function renderMiCicloSemana() {
     '<div class="mc-week-nav">' +
       '<button class="mc-nav-btn" onclick="mcCambiarSemana(-1)" aria-label="Semana anterior">‹</button>' +
       '<div class="mc-week-lbl">' + rango + hoyChip + '</div>' +
-      '<button class="mc-nav-btn" onclick="mcCambiarSemana(1)" aria-label="Semana siguiente">›</button>' +
+      '<button class="mc-nav-btn ' + (mcWeekOffset === 0 ? 'mc-pulse' : '') + '" onclick="mcCambiarSemana(1)" aria-label="Semana siguiente">›</button>' +
     '</div>';
 
   cont.innerHTML =
@@ -5678,6 +5688,26 @@ document.addEventListener('DOMContentLoaded', function () {
   try { t = localStorage.getItem('lunaTheme') || 'light'; } catch (e) {}
   var lbl = document.getElementById('tema-estado');
   if (lbl) lbl.textContent = (t === 'dark') ? 'Activado' : 'Desactivado';
+});
+
+// Indicador "seguí bajando" del inicio: se muestra cuando hay más
+// contenido debajo y se oculta al llegar cerca del final.
+document.addEventListener('DOMContentLoaded', function () {
+  var scroller = document.getElementById('home-scroll');
+  var hint = document.getElementById('home-scroll-hint');
+  if (!scroller || !hint) return;
+  function actualizarHint() {
+    var resto = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
+    // Hay al menos ~40px más para bajar → mostrar; si no, ocultar
+    if (resto > 40) hint.classList.add('show');
+    else hint.classList.remove('show');
+  }
+  scroller.addEventListener('scroll', actualizarHint, { passive: true });
+  window.addEventListener('resize', actualizarHint);
+  // Chequeo inicial y otro tras el primer render de datos
+  actualizarHint();
+  setTimeout(actualizarHint, 600);
+  setTimeout(actualizarHint, 1500);
 });
 
 </script>
