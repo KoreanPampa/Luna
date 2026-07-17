@@ -659,7 +659,7 @@ select.input-field{appearance:none}
     </div>
     <div class="card" id="ciclo-sintomas-card" style="display:none">
       <div class="card-label" id="sym-card-label">🩸 ¿CÓMO TE SENTÍS HOY?</div>
-      <div class="sym-intro">Marcá lo que sentís. Se guarda en tu historial y Luna te sugiere cómo cuidarte 🌸</div>
+      <div class="sym-intro">Contame cómo venís: lo lindo y lo que no tanto también suma 💜 Se guarda en tu historial y Luna te acompaña con eso 🌸</div>
       <div class="sym-group-label good">✨ Lo bueno</div>
       <div class="symptoms-grid" id="symptoms-grid-good"></div>
       <div class="sym-group-label bad" id="sym-bad-label">💜 Molestias</div>
@@ -2592,17 +2592,13 @@ function aplicarEtapaCiclo(etapa) {
   if (regCard)   regCard.style.display = esMeno ? 'none' : '';
   if (regToggle) regToggle.style.display = esMeno ? '' : 'none';
 
-  // Síntomas: en Nueva etapa la grilla cambia y la card queda siempre disponible
+  // Síntomas: la card queda siempre disponible, cualquier día del mes.
+  // Antes solo se mostraba el día exacto en que arrancaba un período nuevo
+  // (Regular/Variable); eso dejaba a la usuaria sin forma de registrar
+  // cómo se siente el resto de los días. Ahora se comporta igual que en
+  // Nueva etapa: siempre visible.
   var symCard = document.getElementById('ciclo-sintomas-card');
-  if (symCard) {
-    if (esMeno) symCard.style.display = '';
-    else {
-      var cic = LS.get('ciclo') || {};
-      var h = new Date();
-      var isoH = h.getFullYear() + '-' + String(h.getMonth()+1).padStart(2,'0') + '-' + String(h.getDate()).padStart(2,'0');
-      symCard.style.display = (cic.start === isoH) ? '' : 'none';
-    }
-  }
+  if (symCard) symCard.style.display = '';
   if (typeof renderSymptoms === 'function') renderSymptoms();
 
   // Ícono de racha en Inicio
@@ -2635,11 +2631,6 @@ function renderCiclo() {
   if (hormProf.age && document.getElementById('horm-age')) document.getElementById('horm-age').value = hormProf.age;
 
   renderSymptoms();
-  // Si el período se registró HOY, mantener visible la sección de síntomas
-  var hoy = new Date();
-  var isoHoy = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
-  var symCard = document.getElementById('ciclo-sintomas-card');
-  if (symCard && ciclo.start === isoHoy) symCard.style.display = '';
 
   var etapaAct = (typeof getEtapaManual === 'function') ? getEtapaManual() : null;
   var esMenoAct = (etapaAct === 'menopausia');
@@ -2966,7 +2957,7 @@ function saveHormProfile() {
   // Refrescar bienestar (en Nueva etapa responde a lo que marcó) y "Tu mes"
   if (((typeof getEtapaManual === 'function') ? getEtapaManual() : null) === 'menopausia') renderBienestarMeno();
   renderTuMes();
-  showToast('Síntomas guardados ✨');
+  showToast('Gracias por contarme cómo estás ✨');
   setTimeout(function() {
     var el = document.getElementById('ciclo-bienestar');
     if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
