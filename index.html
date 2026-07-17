@@ -198,6 +198,15 @@ select.input-field{appearance:none}
 .mc-hoy-chip{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:10px;background:rgba(var(--accent-rgb),.15);border:1px solid rgba(var(--accent-rgb),.35);color:var(--purple-light);font-size:10px;font-weight:600;cursor:pointer}
 .mc-week::-webkit-scrollbar{display:none}
 .mc-nav-btn.mc-pulse{animation:mcNavPulse 2.2s ease-in-out infinite}
+.mc-animo{margin-top:10px}
+.mc-animo-lbl{font-size:11px;color:var(--cream-dim);margin-bottom:8px;text-align:center}
+.mc-animo-row{display:flex;gap:8px;justify-content:center}
+.mc-animo-btn{flex:1;max-width:76px;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:9px 4px;cursor:pointer;text-align:center;transition:all .2s;color:var(--cream-dim)}
+.mc-animo-btn:active{transform:scale(.95)}
+.mc-animo-btn.active{border-color:var(--purple-light);background:rgba(var(--accent-rgb),.12);color:var(--purple-light)}
+.mc-animo-btn .a-emoji{font-size:20px;line-height:1;display:block}
+.mc-animo-btn .a-txt{font-size:10px;margin-top:3px;display:block}
+.mc-animo-more{display:block;text-align:center;font-size:11px;color:var(--purple-light);margin-top:9px;cursor:pointer}
 @keyframes mcNavPulse{0%,100%{transform:translateX(0);opacity:.55}50%{transform:translateX(2px);opacity:1}}
 .mc-day{flex:1;min-width:38px;display:flex;flex-direction:column;align-items:center;gap:5px}
 .mc-day-lbl{font-size:10px;color:var(--cream-dim);letter-spacing:.5px}
@@ -1172,7 +1181,7 @@ async function loadFromCloud(userId) {
       var data = snap.data();
       var keys = ['profile', 'skinResult', 'ciclo', 'cicloHistorial', 'checkins',
                   'checkinDates', 'diario', 'escudos', 'mejorRacha', 'cicloIrregular',
-                  'notifConfig', 'logrosVistos', 'etapaCiclo', 'sintomasDiario', 'notasRapidas'];
+                  'notifConfig', 'logrosVistos', 'etapaCiclo', 'sintomasDiario', 'animoDiario', 'notasRapidas'];
       for (var i = 0; i < keys.length; i++) {
         var k = keys[i];
         if (data[k] !== undefined) {
@@ -1191,7 +1200,7 @@ async function loadFromCloud(userId) {
 var SYNC_KEYS = ['profile', 'skinResult', 'ciclo', 'cicloHistorial',
                  'checkins', 'checkinDates', 'diario', 'escudos',
                  'mejorRacha', 'cicloIrregular', 'logrosVistos', 'etapaCiclo',
-                 'sintomasDiario', 'notasRapidas'];
+                 'sintomasDiario', 'animoDiario', 'notasRapidas'];
 
 // Wrapper LS mejorado con sincronización
 const LS = {
@@ -3265,7 +3274,7 @@ function saveProfile() {
 
 function confirmDeleteData() {
   if (confirm('¿Segura que querés borrar todos tus datos? Esta acción no se puede deshacer.')) {
-    ['profile','skinResult','ciclo','hormProfile','chatHistory','checkins','diario','quizProgress'].forEach(k => LS.del(k));
+    ['profile','skinResult','ciclo','hormProfile','chatHistory','checkins','diario','quizProgress','sintomasDiario','animoDiario'].forEach(k => LS.del(k));
     showToast('Datos eliminados');
     location.reload();
   }
@@ -4415,17 +4424,73 @@ function renderMiCicloSemana() {
       '<button class="mc-nav-btn ' + (mcWeekOffset === 0 ? 'mc-pulse' : '') + '" onclick="mcCambiarSemana(1)" aria-label="Semana siguiente">›</button>' +
     '</div>';
 
+  // Fila de ánimo rápido: SOLO en Nueva etapa (perimenopausia/menopausia).
+  // Permite registrar cómo se siente de un toque, sin ir a la pestaña Ciclo.
+  var animoHTML = '';
+  if (det.etapa === 'menopausia') {
+    var actual = animoRapidoHoy();
+    var botones = ANIMO_OPTS.map(function (o) {
+      var act = (actual === o.key) ? ' active' : '';
+      return '<button class="mc-animo-btn' + act + '" onclick="setAnimoRapido(\'' + o.key + '\')" aria-label="' + o.label + '">' +
+        '<span class="a-emoji">' + o.emoji + '</span><span class="a-txt">' + o.label + '</span></button>';
+    }).join('');
+    animoHTML =
+      '<div class="mc-animo">' +
+        '<div class="mc-animo-lbl">¿Cómo te sentís hoy? 🌙</div>' +
+        '<div class="mc-animo-row">' + botones + '</div>' +
+        '<span class="mc-animo-more" onclick="goTab(\'ciclo\')">Registrar más detalles →</span>' +
+      '</div>';
+  }
+
   cont.innerHTML =
     '<div class="mc-card">' +
       '<div class="mc-head" onclick="goTab(\'ciclo\')"><div class="mc-title">' + titulo + '</div><div class="mc-arrow">Ver más ›</div></div>' +
       navHTML +
       '<div class="mc-week">' + diasHTML + '</div>' +
       '<div class="mc-chips">' + chips + '</div>' +
+      animoHTML +
     '</div>';
 }
 
-// Ánimo de hoy a partir de los síntomas registrados (buenos vs. molestias)
+// Opciones de ánimo rápido (solo Nueva etapa, desde el Home)
+var ANIMO_OPTS = [
+  { key: 'bien',    emoji: '😊', label: 'Bien' },
+  { key: 'normal',  emoji: '😐', label: 'Normal' },
+  { key: 'baja',    emoji: '😔', label: 'Baja' },
+  { key: 'cansada', emoji: '😴', label: 'Cansada' }
+];
+
+// Ánimo rápido registrado hoy (clave animoDiario), o null si no marcó nada
+function animoRapidoHoy() {
+  var log = LS.get('animoDiario') || {};
+  return log[isoLocalHoy()] || null;
+}
+
+// Marca/desmarca el ánimo rápido de hoy y refresca el widget del Home.
+// Guarda en 'animoDiario' (clave propia, sincronizada), sin tocar síntomas.
+function setAnimoRapido(key) {
+  var log = LS.get('animoDiario') || {};
+  var hoy = isoLocalHoy();
+  if (log[hoy] === key) { delete log[hoy]; }   // segundo toque: desmarca
+  else { log[hoy] = key; }
+  // Poda a 90 días para no inflar el documento
+  var hoyPoda = new Date(); hoyPoda.setHours(0, 0, 0, 0);
+  Object.keys(log).forEach(function (f) {
+    var p = f.split('-');
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    if (isNaN(d) || (hoyPoda - d) / 86400000 > 90) delete log[f];
+  });
+  LS.set('animoDiario', log);
+  renderMiCicloSemana();
+}
+
+// Ánimo de hoy: primero el ánimo rápido; si no, se deriva de los síntomas
 function animoDeHoy() {
+  var rapido = animoRapidoHoy();
+  if (rapido) {
+    var o = ANIMO_OPTS.filter(function (a) { return a.key === rapido; })[0];
+    if (o) return o.label + ' ' + o.emoji;
+  }
   var syms = sintomasDeHoy();
   if (!syms.length) return 'Sin registrar';
   var buenos = 0, molestias = 0;
