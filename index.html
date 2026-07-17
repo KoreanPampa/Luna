@@ -227,6 +227,11 @@ select.input-field{appearance:none}
 .rut-step:last-child{margin-bottom:0}
 .rut-step-ico{font-size:13px;flex-shrink:0;filter:saturate(.7)}
 .rut-note{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--purple-light);line-height:1.5}
+.ingr-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.ingr-row:last-child{border-bottom:none}
+.ingr-row-name{font-size:13px;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ingr-row-sub{font-size:11px;color:var(--cream-dim);margin-top:2px}
+.ingr-x{flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--cream-dim);font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .cn-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;margin:0 16px 12px;box-shadow:var(--shadow)}
 .cn-grid{display:flex;gap:8px;align-items:stretch}
 .cn-box{flex:1;border-radius:16px;padding:12px;min-width:0}
@@ -926,6 +931,31 @@ select.input-field{appearance:none}
     <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="closeModal('modal-nota-rapida')">Cancelar</button>
   </div>
 </div>
+<div class="modal-overlay" id="modal-ingrediente">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🧪 Mis ingredientes</div>
+    <div style="font-size:12px;color:var(--cream-dim);line-height:1.5;margin-bottom:12px">Cargá lo que usás en tu piel. Luna te avisa qué combina, qué no, y cómo ajustarlo según tu ciclo 🌸</div>
+    <div id="ingr-lista"></div>
+    <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+      <div class="input-label">Agregar</div>
+      <div style="display:flex;gap:8px;margin:8px 0">
+        <button type="button" class="toggle-btn active" id="ingr-tipo-ing" onclick="setIngrTipo('ingrediente')">🧴 Ingrediente</button>
+        <button type="button" class="toggle-btn" id="ingr-tipo-prod" onclick="setIngrTipo('producto')">🛍️ Producto</button>
+      </div>
+      <div class="form-group" id="ingr-nombre-group" style="display:none">
+        <div class="input-label">Nombre del producto</div>
+        <input class="input-field" id="ingr-nombre" maxlength="60" placeholder="Ej: Sérum The Ordinary">
+      </div>
+      <div class="form-group">
+        <div class="input-label">Activo principal</div>
+        <select class="input-field" id="ingr-activo"></select>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="agregarIngrediente()">Agregar 🌸</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="closeModal('modal-ingrediente')">Cerrar</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="modal-privacy">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -1181,7 +1211,7 @@ async function loadFromCloud(userId) {
       var data = snap.data();
       var keys = ['profile', 'skinResult', 'ciclo', 'cicloHistorial', 'checkins',
                   'checkinDates', 'diario', 'escudos', 'mejorRacha', 'cicloIrregular',
-                  'notifConfig', 'logrosVistos', 'etapaCiclo', 'sintomasDiario', 'animoDiario', 'notasRapidas'];
+                  'notifConfig', 'logrosVistos', 'etapaCiclo', 'sintomasDiario', 'animoDiario', 'notasRapidas', 'misIngredientes'];
       for (var i = 0; i < keys.length; i++) {
         var k = keys[i];
         if (data[k] !== undefined) {
@@ -1200,7 +1230,7 @@ async function loadFromCloud(userId) {
 var SYNC_KEYS = ['profile', 'skinResult', 'ciclo', 'cicloHistorial',
                  'checkins', 'checkinDates', 'diario', 'escudos',
                  'mejorRacha', 'cicloIrregular', 'logrosVistos', 'etapaCiclo',
-                 'sintomasDiario', 'animoDiario', 'notasRapidas'];
+                 'sintomasDiario', 'animoDiario', 'notasRapidas', 'misIngredientes'];
 
 // Wrapper LS mejorado con sincronización
 const LS = {
@@ -1526,6 +1556,35 @@ const GLOSARIO = [
   { name:'Ácido salicílico (BHA)', short:'Limpieza de poros', body:'Exfoliante químico que penetra dentro del poro y lo desobstruye desde adentro. Es liposoluble (se mezcla con el sebo), por eso funciona tan bien en piel grasa y con acné. Se usa en tónicos o sérums al 0.5-2%. No todos los días al principio — empezá 2-3 veces por semana.' },
   { name:'AHA (ácido glicólico/láctico)', short:'Exfoliación suave', body:'Los AHA son exfoliantes químicos que actúan en la superficie de la piel, removiendo las células muertas y mejorando textura, manchas y luminosidad. El glicólico es más potente, el láctico más suave (mejor para sensibles). Se usan de noche, 1-3 veces por semana, y siempre con SPF al día siguiente.' },
   { name:'Péptidos', short:'Colágeno y firmeza', body:'Son cadenas de aminoácidos que le dan señales a la piel para que produzca más colágeno y elastina. Son suaves, bien tolerados y muy útiles para pieles maduras o en los 30+. No generan los resultados inmediatos del retinol, pero son una opción más suave con efectos acumulativos en el tiempo.' }
+];
+
+// ─── MIS INGREDIENTES: base de conocimiento de activos ───
+// Cada activo que la usuaria puede cargar, con su momento (am/pm/both),
+// rol, si es sensible a la fase del ciclo y si conviene frenar en embarazo.
+var ACTIVOS_KB = {
+  retinol:     { nombre:'Retinol',                 emoji:'🌙', momento:'pm',   rol:'Activo fuerte',    sensibleFase:true,  embarazoStop:true  },
+  vitaminac:   { nombre:'Vitamina C',              emoji:'🍊', momento:'am',   rol:'Antioxidante',     sensibleFase:false, embarazoStop:false },
+  aha:         { nombre:'AHA (glicólico/láctico)', emoji:'🧪', momento:'pm', rol:'Exfoliante', sensibleFase:true,  embarazoStop:false },
+  bha:         { nombre:'Ácido salicílico (BHA)', emoji:'🧫', momento:'pm', rol:'Exfoliante', sensibleFase:true,  embarazoStop:false },
+  niacinamida: { nombre:'Niacinamida',             emoji:'✨', momento:'both', rol:'Multi-talento',    sensibleFase:false, embarazoStop:false },
+  hialuronico: { nombre:'Ácido hialurónico', emoji:'💧', momento:'both', rol:'Hidratante', sensibleFase:false, embarazoStop:false },
+  centella:    { nombre:'Centella asiática',   emoji:'🌿', momento:'both', rol:'Calmante',         sensibleFase:false, embarazoStop:false },
+  ceramidas:   { nombre:'Ceramidas',               emoji:'🧱', momento:'both', rol:'Barrera',          sensibleFase:false, embarazoStop:false },
+  peptidos:    { nombre:'Péptidos',           emoji:'🧬', momento:'both', rol:'Firmeza',          sensibleFase:false, embarazoStop:false },
+  spf:         { nombre:'Protector solar (SPF)',   emoji:'☀️', momento:'am',   rol:'Protector',        sensibleFase:false, embarazoStop:false },
+  pantenol:    { nombre:'Pantenol / Alantoína', emoji:'🤍', momento:'both', rol:'Calmante suave', sensibleFase:false, embarazoStop:false },
+  azelaico:    { nombre:'Ácido azelaico',      emoji:'🌼', momento:'both', rol:'Multi suave',      sensibleFase:false, embarazoStop:false },
+  pha:         { nombre:'PHA',                      emoji:'🫧', momento:'pm',   rol:'Exfoliante suave', sensibleFase:false, embarazoStop:false }
+};
+
+// Pares que conviene no mezclar en la misma rutina.
+var MEZCLAS_MALAS = [
+  { a:'retinol',   b:'vitaminac', msg:'Cargaste Retinol y Vitamina C — usá la C de día y el retinol de noche, nunca juntos.' },
+  { a:'retinol',   b:'aha',       msg:'Retinol + AHA en la misma rutina irritan de más. Alterná noches.' },
+  { a:'retinol',   b:'bha',       msg:'Retinol + BHA juntos irritan. Usalos en noches distintas.' },
+  { a:'aha',       b:'bha',       msg:'AHA y BHA juntos son mucho exfoliante. No los uses el mismo día.' },
+  { a:'vitaminac', b:'aha',       msg:'Vitamina C con AHA puede picar. Separalas: C de día, AHA de noche.' },
+  { a:'vitaminac', b:'bha',       msg:'Vitamina C con BHA puede irritar. Mejor en momentos distintos.' }
 ];
 
 // ─── FAQ ─────────────────────────────────────────
@@ -4525,50 +4584,168 @@ function rutIcono(paso) {
   return '🌸';
 }
 
+// ─── MIS INGREDIENTES: logica y render ───
+// Lista de lo que la usuaria usa en su piel (ingredientes sueltos y
+// productos con su activo principal). Se guarda en 'misIngredientes'
+// (sincronizada a Firestore). Luna razona sobre el 'activo' de cada item.
+
+function getMisIngredientes() {
+  var v = LS.get('misIngredientes');
+  return Array.isArray(v) ? v : [];
+}
+
+var _ingrTipo = 'ingrediente';
+
+function setIngrTipo(t) {
+  _ingrTipo = (t === 'producto') ? 'producto' : 'ingrediente';
+  var bi = document.getElementById('ingr-tipo-ing');
+  var bp = document.getElementById('ingr-tipo-prod');
+  var ng = document.getElementById('ingr-nombre-group');
+  if (bi) bi.classList.toggle('active', _ingrTipo === 'ingrediente');
+  if (bp) bp.classList.toggle('active', _ingrTipo === 'producto');
+  if (ng) ng.style.display = (_ingrTipo === 'producto') ? 'block' : 'none';
+}
+
+function poblarSelectActivo() {
+  var sel = document.getElementById('ingr-activo');
+  if (!sel) return;
+  sel.innerHTML = Object.keys(ACTIVOS_KB).map(function (k) {
+    var a = ACTIVOS_KB[k];
+    return '<option value="' + k + '">' + a.emoji + ' ' + a.nombre + '</option>';
+  }).join('');
+}
+
+function openIngredienteModal() {
+  setIngrTipo('ingrediente');
+  poblarSelectActivo();
+  var n = document.getElementById('ingr-nombre'); if (n) n.value = '';
+  renderIngredienteLista();
+  openModal('modal-ingrediente');
+}
+
+function renderIngredienteLista() {
+  var cont = document.getElementById('ingr-lista');
+  if (!cont) return;
+  var items = getMisIngredientes();
+  if (!items.length) {
+    cont.innerHTML = '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5;padding:4px 0 8px">Todavía no cargaste nada. Sumá lo que usás en tu piel y Luna te dice cómo combinarlo 🌸</div>';
+    return;
+  }
+  cont.innerHTML = items.map(function (it) {
+    var kb = ACTIVOS_KB[it.activo] || { emoji: '🌸', rol: '', nombre: it.activo };
+    var sub = (it.tipo === 'producto') ? (kb.emoji + ' ' + kb.nombre + ' · ' + kb.rol) : kb.rol;
+    return '<div class="ingr-row">' +
+        '<div style="min-width:0">' +
+          '<div class="ingr-row-name">' + escHTML(it.nombre) + '</div>' +
+          '<div class="ingr-row-sub">' + escHTML(sub) + '</div>' +
+        '</div>' +
+        '<button class="ingr-x" onclick="borrarIngrediente(' + Number(it.id) + ')" aria-label="Quitar">×</button>' +
+      '</div>';
+  }).join('');
+}
+
+function agregarIngrediente() {
+  var selEl = document.getElementById('ingr-activo');
+  var activo = selEl ? selEl.value : '';
+  if (!ACTIVOS_KB[activo]) { showToast('Elegí un activo 🌸'); return; }
+  var items = getMisIngredientes();
+  if (items.length >= 40) { showToast('Llegaste al máximo de la lista 🌸'); return; }
+  var nombre;
+  if (_ingrTipo === 'producto') {
+    var nEl = document.getElementById('ingr-nombre');
+    nombre = (nEl ? nEl.value : '').trim().slice(0, 60);
+    if (!nombre) { showToast('Ponele un nombre al producto 🌸'); return; }
+  } else {
+    nombre = ACTIVOS_KB[activo].nombre;
+  }
+  items.push({ id: Date.now(), tipo: _ingrTipo, nombre: nombre, activo: activo });
+  LS.set('misIngredientes', items);
+  var nEl2 = document.getElementById('ingr-nombre'); if (nEl2) nEl2.value = '';
+  renderIngredienteLista();
+  renderHomeRutina();
+  showToast('Sumado a tu piel ✨');
+}
+
+function borrarIngrediente(id) {
+  var items = getMisIngredientes().filter(function (x) { return x.id !== id; });
+  LS.set('misIngredientes', items);
+  renderIngredienteLista();
+  renderHomeRutina();
+}
+
+// Avisos de Luna: mezclas malas, falta de SPF y nota segun fase del ciclo.
+// La parte de fase SOLO lee calcularCicloStats()/detectarEtapaVital():
+// no recalcula nada. Solo se activa con ciclo regular y actualizado, y
+// unicamente si la usuaria carga algun activo fuerte (retinol/AHA/BHA).
+function avisosLuna(items) {
+  var avisos = [];
+  var keys = items.map(function (x) { return x.activo; });
+  var has = function (k) { return keys.indexOf(k) >= 0; };
+  MEZCLAS_MALAS.forEach(function (m) {
+    if (has(m.a) && has(m.b)) avisos.push('⚠️ ' + m.msg);
+  });
+  if (items.length && !has('spf')) {
+    avisos.push('☀️ No cargaste protector solar — es el paso más importante de tu rutina.');
+  }
+  var fuertes = ['retinol', 'aha', 'bha'];
+  var tieneFuerte = keys.some(function (k) { return fuertes.indexOf(k) >= 0; });
+  if (tieneFuerte) {
+    var det = (typeof detectarEtapaVital === 'function') ? detectarEtapaVital() : { etapa: '' };
+    var s = (typeof calcularCicloStats === 'function') ? calcularCicloStats() : null;
+    if (det.etapa === 'regular' && s && !s.atrasada && !s.desactualizado && s.fase) {
+      var fn = s.fase.name || '';
+      var nota = '';
+      if (fn.indexOf('Menstrual') === 0)      nota = '🩸 Tu piel está más sensible esta semana — espaciá retinol y ácidos.';
+      else if (fn.indexOf('Folicular') === 0) nota = '🌱 Buen momento para tus activos, la piel los tolera mejor.';
+      else if (fn.indexOf('Ovulaci') === 0)   nota = '✨ Piel en su mejor momento, tus activos rinden bien.';
+      else if (fn.indexOf('tea') >= 0)        nota = '🍂 Si aparecen granitos, sumá calmantes; no arranques activos nuevos ahora.';
+      if (nota) avisos.push(nota);
+    }
+  }
+  return avisos;
+}
+
 function renderHomeRutina() {
   var cont = document.getElementById('home-rutina');
   if (!cont) return;
-  var result = LS.get('skinResult');
-  if (!result) {
+  var items = getMisIngredientes();
+  if (!items.length) {
     cont.innerHTML =
-      '<div class="rut-card" style="cursor:pointer" onclick="goTab(\'skin\')">' +
-        '<div class="mc-head" style="margin-bottom:6px"><div class="mc-title">✨ Tu rutina de skincare</div><div class="mc-arrow">›</div></div>' +
-        '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Hacé tu evaluación de piel y Luna arma tu rutina de mañana y de noche, a tu medida 🌸</div>' +
-        '<div style="margin-top:8px;font-size:12px;color:var(--purple-light);font-weight:600">Empezar evaluación →</div>' +
+      '<div class="rut-card" style="cursor:pointer" onclick="openIngredienteModal()">' +
+        '<div class="mc-head" style="margin-bottom:6px"><div class="mc-title">🧪 Mis ingredientes</div><div class="mc-arrow">›</div></div>' +
+        '<div style="font-size:12px;color:var(--cream-dim);line-height:1.5">Contale a Luna qué ingredientes y productos usás en tu piel. Ella te dice cuáles combinan, cuáles no, y cómo ajustarlos según tu ciclo 🌸</div>' +
+        '<div style="margin-top:8px;font-size:12px;color:var(--purple-light);font-weight:600">Agregar el primero →</div>' +
       '</div>';
     return;
   }
-  var route = ROUTINES[result.type] || ROUTINES.normal;
-  function col(steps) {
-    return steps.slice(0, 4).map(function (p) {
-      return '<div class="rut-step"><span class="rut-step-ico">' + rutIcono(p) + '</span><span>' + rutCorto(p) + '</span></div>';
-    }).join('');
+  function chip(it) {
+    var kb = ACTIVOS_KB[it.activo] || { emoji: '🌸', nombre: it.nombre };
+    var txt = (it.tipo === 'producto') ? it.nombre : kb.nombre;
+    if (txt.length > 22) txt = txt.slice(0, 20).trim() + '…';
+    return '<div class="rut-step"><span class="rut-step-ico">' + kb.emoji + '</span><span>' + escHTML(txt) + '</span></div>';
   }
-  // Nota del día según fase o etapa (misma línea de piel que usa la home del ciclo)
-  var s = calcularCicloStats();
-  var det = detectarEtapaVital();
-  var nota;
-  if (det.etapa === 'menopausia') {
-    nota = 'Hoy: nutrición, firmeza y SPF — los tres aliados de tu piel en esta etapa 💜';
-  } else if (det.etapa === 'regular' && s && !s.atrasada && !s.desactualizado && s.fase) {
-    var pielFase = {
-      'Menstrual 🩸': 'Hoy: piel más seca o sensible. Priorizá hidratación suave.',
-      'Folicular 🌱': 'Hoy: tu piel mejora y tolera mejor activos nuevos.',
-      'Ovulación ✨': 'Hoy: piel en su mejor momento, luminosa y pareja.',
-      'Lútea 🍂': 'Hoy: puede aparecer grasa o algún granito. Es normal, sumá calma.'
-    };
-    nota = pielFase[s.fase.name] || 'Constancia > cantidad: tu rutina simple, todos los días 🌸';
-  } else {
-    nota = 'Constancia > cantidad: tu rutina simple, todos los días 🌸';
+  function esMomento(it, m) {
+    var mm = (ACTIVOS_KB[it.activo] || {}).momento;
+    return mm === m || mm === 'both';
   }
+  var am = items.filter(function (it) { return esMomento(it, 'am'); });
+  var pm = items.filter(function (it) { return esMomento(it, 'pm'); });
+  function col(arr) {
+    if (!arr.length) return '<div class="rut-step" style="opacity:.45"><span>—</span></div>';
+    return arr.map(chip).join('');
+  }
+  var avisos = avisosLuna(items);
+  var avisosHTML = avisos.length
+    ? avisos.map(function (a) { return '<div class="rut-note" style="border-top:none;padding-top:0;margin-top:8px">' + escHTML(a) + '</div>'; }).join('')
+    : '<div class="rut-note">💡 Tu piel está bien combinada. Constancia > cantidad 🌸</div>';
   cont.innerHTML =
     '<div class="rut-card">' +
-      '<div class="mc-head" onclick="goTab(\'skin\')"><div class="mc-title">✨ Tu rutina de skincare</div><div class="mc-arrow">Ver más ›</div></div>' +
+      '<div class="mc-head" onclick="openIngredienteModal()"><div class="mc-title">🧪 Mis ingredientes</div><div class="mc-arrow">Gestionar ›</div></div>' +
       '<div class="rut-split">' +
-        '<div class="rut-col am" onclick="goTab(\'skin\')"><div class="rut-col-head"><span>Mañana</span><span>☀️</span></div>' + col(route.am || []) + '</div>' +
-        '<div class="rut-col pm" onclick="goTab(\'skin\')"><div class="rut-col-head"><span>Noche</span><span>🌙</span></div>' + col(route.pm || []) + '</div>' +
+        '<div class="rut-col am" onclick="openIngredienteModal()"><div class="rut-col-head"><span>Día</span><span>☀️</span></div>' + col(am) + '</div>' +
+        '<div class="rut-col pm" onclick="openIngredienteModal()"><div class="rut-col-head"><span>Noche</span><span>🌙</span></div>' + col(pm) + '</div>' +
       '</div>' +
-      '<div class="rut-note">💡 ' + nota + '</div>' +
+      avisosHTML +
     '</div>';
 }
 
